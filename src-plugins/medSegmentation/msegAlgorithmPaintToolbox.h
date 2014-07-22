@@ -183,8 +183,8 @@ private:
     QLabel * m_wandUpperThresholdLabel, *m_wandLowerThresholdLabel;
     QSlider *m_wandUpperThresholdSlider, *m_wandLowerThresholdSlider;
     QDoubleSpinBox *m_wandUpperThresholdSpinBox , * m_wandLowerThresholdSpinBox;
-    QPushButton * m_newSeedButton,* m_removeSeedButton;
-    QShortcut *newSeed_shortcut, *removeSeed_shortcut;
+    QPushButton * m_removeSeedButton;
+    QShortcut *removeSeed_shortcut;
     QCheckBox *m_wand3DCheckbox, *m_wand3DRealTime;
     QLabel * m_wandInfo;
     QTime wandTimer;

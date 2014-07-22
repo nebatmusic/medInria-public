@@ -140,10 +140,6 @@ public:
                 m_cb->setSeed(posImage);
                 m_cb->initiateRegionGrowth = true;
                 m_cb->updateWandRegion(imageView, posImage);
-                if (mouseEvent->modifiers()==Qt::CTRL)
-                {
-                    m_cb->newSeed();                
-                }
                 m_paintState = PaintState::None; //Wand operation is over
                 
             }
@@ -393,13 +389,10 @@ AlgorithmPaintToolbox::AlgorithmPaintToolbox(QWidget *parent ) :
 
     wandTimer = QTime();
 
-    m_newSeedButton = new QPushButton("New Seed",this);
-    m_newSeedButton->hide();
     m_removeSeedButton = new QPushButton("Remove seed",this);
     m_removeSeedButton->hide();
     seedPlanted = false;
     
-    connect(m_newSeedButton,SIGNAL(clicked()),this,SLOT(newSeed()));
     connect(m_removeSeedButton,SIGNAL(clicked()),this,SLOT(removeSeed()));
 
     connect(m_wandUpperThresholdSlider,SIGNAL(valueChanged(int)),this,SLOT(synchronizeWandSpinBoxesAndSliders()));
@@ -433,7 +426,6 @@ AlgorithmPaintToolbox::AlgorithmPaintToolbox(QWidget *parent ) :
     magicWandLayout2->addWidget( m_wandLowerThresholdSlider );
     magicWandLayout2->addWidget( m_wandLowerThresholdSpinBox );
     QHBoxLayout * magicWandLayout3 = new QHBoxLayout();
-    magicWandLayout3->addWidget( m_newSeedButton );
     magicWandLayout3->addWidget( m_removeSeedButton );
 
     magicWandLayout = new QFormLayout(this);
@@ -500,12 +492,10 @@ AlgorithmPaintToolbox::AlgorithmPaintToolbox(QWidget *parent ) :
     redo_shortcut = new QShortcut(QKeySequence(tr("Ctrl+y","Redo segmentation")),this);
     copy_shortcut = new QShortcut(QKeySequence(tr("Ctrl+c","Copy segmentation")),this);
     paste_shortcut = new QShortcut(QKeySequence(tr("Ctrl+v","Paste segmentation")),this);
-    newSeed_shortcut = new QShortcut(QKeySequence(tr("Ctrl+Return","Accept growth")),this);
     removeSeed_shortcut = new QShortcut(QKeySequence(tr("Ctrl+BackSpace","Remove seed")),this);
     addBrushSize_shortcut = new QShortcut(QKeySequence(tr("Ctrl+Up","Add brush size")),this);
     reduceBrushSize_shortcut = new QShortcut(QKeySequence(tr("Ctrl+Down","Reduce brush size")),this);
 
-    newSeed_shortcut->setEnabled(false);
     removeSeed_shortcut->setEnabled(false);
     addBrushSize_shortcut->setEnabled(false);
     reduceBrushSize_shortcut->setEnabled(false);
@@ -529,7 +519,6 @@ AlgorithmPaintToolbox::AlgorithmPaintToolbox(QWidget *parent ) :
     connect(redo_shortcut,SIGNAL(activated()),this,SLOT(redo()));
     connect(copy_shortcut,SIGNAL(activated()),this,SLOT(copySliceMask()));
     connect(paste_shortcut,SIGNAL(activated()),this,SLOT(pasteSliceMask()));
-    connect(newSeed_shortcut,SIGNAL(activated()),this,SLOT(newSeed()));
     connect(removeSeed_shortcut,SIGNAL(activated()),this,SLOT(removeSeed()));
     connect(addBrushSize_shortcut,SIGNAL(activated()),this,SLOT(increaseBrushSize()));
     connect(reduceBrushSize_shortcut,SIGNAL(activated()),this,SLOT(reduceBrushSize()));
@@ -1650,9 +1639,7 @@ void AlgorithmPaintToolbox::setSeedPlanted(bool val,MaskType::IndexType index,un
         }
 
         m_wandInfo->setText("Seed X : " + QString::number(index[direction[0]]) + " Y : " + QString::number(index[direction[1]]) + " Slice : " + QString::number(index[planeIndex]+1) + " Value : " + QString::number(value)); 
-        m_newSeedButton->show();
         m_removeSeedButton->show();
-        newSeed_shortcut->setEnabled(true);
         removeSeed_shortcut->setEnabled(true);
     }
 }
@@ -1661,9 +1648,7 @@ void AlgorithmPaintToolbox::newSeed()
 {
     seedPlanted = false;
     m_wandInfo->setText("Select a pixel in the image to plant the seed");
-    m_newSeedButton->hide();
     m_removeSeedButton->hide();
-    newSeed_shortcut->setEnabled(false);
     removeSeed_shortcut->setEnabled(false);
     //if (currentView && currentView->receiverWidget()) // TODO : see if needed
     //        currentView->receiverWidget()->setFocus(); // bring the focus back to the view.
