@@ -67,6 +67,8 @@ public:
     AlgorithmPaintToolbox( QWidget *parent );
     ~AlgorithmPaintToolbox();
 
+    void setWorkspace(medAbstractWorkspace* workspace);
+
     inline void setPaintState( PaintState::E value){m_paintState = value;}
     inline PaintState::E paintState(){return m_paintState;}
 
@@ -96,6 +98,8 @@ public:
     medAbstractData* processOutput();
 
 public slots:
+    void updateView();
+
     void activateStroke();
     void activateMagicWand();
     void updateMagicWandComputationSpeed();
@@ -132,7 +136,7 @@ public slots:
 
 protected:
     friend class ClickAndMoveEventFilter;
-
+    
     void addStroke( medAbstractImageView *view, const QVector3D &vec );
     void setData( medAbstractData *data );
 

@@ -24,6 +24,8 @@
 #include <medPluginManager.h>
 #include <medDataManager.h>
 #include <medAbstractDataFactory.h>
+#include <medTabbedViewContainers.h>
+#include <medViewContainer.h>
 
 #include <dtkCore/dtkAbstractProcessFactory.h>
 #include <dtkLog/dtkLog.h>
@@ -641,6 +643,52 @@ void AlgorithmPaintToolbox::import()
 {
     setOutputMetadata(m_imageData, m_maskData);
     medDataManager::instance()->importData(m_maskData, true);
+}
+
+void AlgorithmPaintToolbox::setWorkspace(medAbstractWorkspace* workspace)
+{
+    medSegmentationAbstractToolBox::setWorkspace(workspace);
+    medTabbedViewContainers * containers = workspace->stackedViewContainers();
+
+    connect(containers,SIGNAL(containersSelectedChanged()),this,SLOT(updateView()),Qt::UniqueConnection);
+
+    updateView();
+}
+
+void AlgorithmPaintToolbox::updateView()
+{
+    medTabbedViewContainers * containers = this->getWorkspace()->stackedViewContainers();
+    QList<medViewContainer*> containersInTabSelected =  containers->containersInTab(containers->currentIndex());
+    medAbstractView *view=NULL;
+    for(int i=0;i<containersInTabSelected.length();i++)
+    {
+        if (containersInTabSelected[i]->isSelected())
+        {
+            view = containersInTabSelected[i]->view();
+            break;
+        }
+    }
+
+    if (view)
+        setCurrentView(qobject_cast<medAbstractImageView*>(view));
+
+    updateMouseInteraction();
+
+    // TODO : get rid of similar lines in mousePressEvent, we need this here otherwise we cannot use interpolate/copy/paste 
+    //                     //  on the view as long as the setData is not called for this view
+    if (currentView)
+    {
+        foreach(medDataIndex index, currentView->dataList())
+        {
+            medAbstractData* data = medDataManager::instance()->retrieveData(index);
+            medImageMaskAnnotationData * existingMaskAnnData = dynamic_cast<medImageMaskAnnotationData *>(data);
+            if(!existingMaskAnnData)
+            {
+                setData( data );
+                break;
+            }
+        }
+    }
 }
 
 void AlgorithmPaintToolbox::setLabel(int newVal)
@@ -1602,7 +1650,7 @@ void AlgorithmPaintToolbox::setCurrentView(medAbstractImageView * view)
     if (!m_undoStacks->contains(currentView)){
         m_redoStacks->insert(currentView,new QStack<PairListSlicePlaneId>());
         m_undoStacks->insert(currentView,new QStack<PairListSlicePlaneId>());
-        connect(view,SIGNAL(closed()),this,SLOT(onViewClosed()));
+        connect(view,SIGNAL(closed()),this,SLOT(onViewClosed()),Qt::UniqueConnection);
     }
 }
 
