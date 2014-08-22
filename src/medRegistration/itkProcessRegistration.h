@@ -85,7 +85,7 @@ public:
      * @return int 0 if it succeeded, any other value is an error. (could be used as error code)
     */
     int update();
-    
+
     /**
      * @brief Sets the fixed or moving image paramters of the process.
      *
@@ -201,7 +201,7 @@ protected :
     */
     virtual int update(ImageType);
 
-    virtual void setInputData(medAbstractData *data, int channel);
+    virtual void setInput ( medAbstractData *data, int channel = 0 );
 
 private:
     itkProcessRegistrationPrivate *d;
