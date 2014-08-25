@@ -2038,39 +2038,42 @@ void AlgorithmPaintToolbox::interpolate()
             isD1 = isData(img1,label);
             slice1= i+1;
 
-            if (isD0 && isD1 && slice1-slice0>1)  // if both images not empty
+            if (isD0 && isD1)       //if both images not empty
             {
-                Mask2dIterator iterator0(img0,img0->GetBufferedRegion()); //Create image iterator
-                iterator0.GoToBegin();
-                Mask2dIterator iterator1(img1,img1->GetBufferedRegion()); //Create image iterator
-                iterator1.GoToBegin();
-                unsigned int coord0[2],coord1[2];
-                computeCentroid(iterator0,coord0);
-                computeCentroid(iterator1,coord1);
-                unsigned int center[2]={size[0]/2,size[1]/2};
-                int C0C1[2] = {coord1[0]- coord0[0],coord1[1]-coord0[1]};
-                int C0center[2] = {center[0]- coord0[0],center[1]-coord0[1]};
-                int C1center[2] = {center[0]- coord1[0],center[1]-coord1[1]};
-                Mask2dType::Pointer      img0tr             = Mask2dType::New();
-                Mask2dType::Pointer      img1tr             = Mask2dType::New();
-                img0tr = translateImageByVec(img0,C0center);
-                img1tr = translateImageByVec(img1,C1center);
-
-                distanceMapImg0 = computeDistanceMap(img0tr);
-                distanceMapImg1 = computeDistanceMap(img1tr);
-                // For undo/redo purposes -------------------------
-                QList<int> listIdSlice;
-                for (int j=slice0+1; j<slice1; ++j)
-                    listIdSlice.append(j);
-                addSliceToStack(currentView,planeIndex,listIdSlice); 
-                // -------------------------------------------------
-                // Interpolate the "j" intermediate slice (float) // float->unsigned char 0/255 and copy into output volume
-                for (int j=slice0+1; j<slice1; ++j) // for each intermediate slice
+                if(slice1-slice0>1)
                 {
-                    double vec[2];
-                    vec[0]= (((j-slice0)*(C0C1[0]/(float)(slice1-slice0))+coord0[0])-center[0]);
-                    vec[1]= (((j-slice0)*(C0C1[1]/(float)(slice1-slice0))+coord0[1])-center[1]);
-                    computeIntermediateSlice(distanceMapImg0, distanceMapImg1,slice0,slice1, j,itVolumOut,itMask,vec);
+                    Mask2dIterator iterator0(img0,img0->GetBufferedRegion()); //Create image iterator
+                    iterator0.GoToBegin();
+                    Mask2dIterator iterator1(img1,img1->GetBufferedRegion()); //Create image iterator
+                    iterator1.GoToBegin();
+                    unsigned int coord0[2],coord1[2];
+                    computeCentroid(iterator0,coord0);
+                    computeCentroid(iterator1,coord1);
+                    unsigned int center[2]={size[0]/2,size[1]/2};
+                    int C0C1[2] = {coord1[0]- coord0[0],coord1[1]-coord0[1]};
+                    int C0center[2] = {center[0]- coord0[0],center[1]-coord0[1]};
+                    int C1center[2] = {center[0]- coord1[0],center[1]-coord1[1]};
+                    Mask2dType::Pointer      img0tr             = Mask2dType::New();
+                    Mask2dType::Pointer      img1tr             = Mask2dType::New();
+                    img0tr = translateImageByVec(img0,C0center);
+                    img1tr = translateImageByVec(img1,C1center);
+
+                    distanceMapImg0 = computeDistanceMap(img0tr);
+                    distanceMapImg1 = computeDistanceMap(img1tr);
+                    // For undo/redo purposes -------------------------
+                    QList<int> listIdSlice;
+                    for (int j=slice0+1; j<slice1; ++j)
+                        listIdSlice.append(j);
+                    addSliceToStack(currentView,planeIndex,listIdSlice); 
+                    // -------------------------------------------------
+                    // Interpolate the "j" intermediate slice (float) // float->unsigned char 0/255 and copy into output volume
+                    for (int j=slice0+1; j<slice1; ++j) // for each intermediate slice
+                    {
+                        double vec[2];
+                        vec[0]= (((j-slice0)*(C0C1[0]/(float)(slice1-slice0))+coord0[0])-center[0]);
+                        vec[1]= (((j-slice0)*(C0C1[1]/(float)(slice1-slice0))+coord0[1])-center[1]);
+                        computeIntermediateSlice(distanceMapImg0, distanceMapImg1,slice0,slice1, j,itVolumOut,itMask,vec);
+                    }
                 }
                 isD0=false;
             }
