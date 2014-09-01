@@ -428,3 +428,9 @@ QWidget* medAbstractView::mouseInteractionWidget()
 
     return d->mouseInteractionWidget;
 }
+
+void medAbstractView::setTransferFunctions( QList<double> scalars,
+                                            QList<QColor> colors )
+{
+    DTK_DEFAULT_IMPLEMENTATION;
+}
