@@ -52,6 +52,7 @@ std::vector<std::string> vtkLookupTableManager::GetAvailableLookupTables()
 			  "Black & White",
 			  "Black & White Inversed",
 			  "Spectrum",
+              "Cardiac Activation",
 			  "Hot Metal",
 			  "Hot Green",
 			  "Hot Iron",
@@ -106,6 +107,8 @@ vtkLookupTable* vtkLookupTableManager::GetLookupTable(const std::string & name)
     return vtkLookupTableManager::GetBWInverseLookupTable();
   else if ( name == "Spectrum" )
     return vtkLookupTableManager::GetSpectrumLookupTable();
+  else if ( name == "Cardiac Activation" )
+      return vtkLookupTableManager::GetCardiacActivationLookupTable();
   else if ( name == "Hot Metal" )
     return vtkLookupTableManager::GetHotMetalLookupTable();
   else if ( name == "Hot Green" )
@@ -196,6 +199,20 @@ vtkLookupTable* vtkLookupTableManager::GetSpectrumLookupTable()
   return lut;
 }
 
+vtkLookupTable* vtkLookupTableManager::GetCardiacActivationLookupTable()
+{
+    vtkLookupTable* lut = vtkLookupTable::New();
+    lut->SetNumberOfTableValues(256);
+    lut->Build();
+
+        for( int i=0; i<256; i++)
+        {
+        // lut->SetTableValue(i, (double)Spectrum[i]/255.0, (double)Spectrum[256+i]/255.0, (double)Spectrum[256*2+i]/255.0, (double)(i)/255.0 );
+        lut->SetTableValue(i,(double)Spectrum[256*2+i]/255.0,(double)Spectrum[256+i]/255.0,(double)Spectrum[i]/255.0, 1.0 );
+        }
+
+    return lut;
+}
 
 vtkLookupTable* vtkLookupTableManager::GetHotMetalLookupTable()
 {
@@ -619,4 +636,18 @@ vtkLookupTable* vtkLookupTableManager::GetJetLookupTable()
   
   return lut;
 
+}
+
+vtkLookupTable* vtkLookupTableManager::CreateLookupTable(double r, double g, double b, double alpha)
+{
+    vtkLookupTable* lut = vtkLookupTable::New();
+
+    lut->SetNumberOfTableValues(2);
+    lut->SetRange(0.0,1.0);
+    lut->SetTableValue( 0, 0.0, 0.0, 0.0, 0.0 ); //label 0 is transparent
+    lut->SetTableValue( 1, 0.0, 1.0, 0.0, 0.5 ); //label 1 is opaque and green
+
+    lut->Build();
+
+    return lut;
 }
