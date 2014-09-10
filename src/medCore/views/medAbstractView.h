@@ -74,8 +74,6 @@ public:
     QImage generateThumbnail(const QSize &size);
     virtual void setOffscreenRendering(bool isOffscreen);
 
-    virtual medAbstractViewInteractor* primaryInteractor(medAbstractData* data);
-    virtual QList<medAbstractInteractor*> extraInteractors(medAbstractData* data);
     virtual medAbstractViewNavigator* primaryNavigator();
     virtual QList<medAbstractNavigator*> extraNavigators();
 
@@ -96,6 +94,11 @@ signals:
 
 
 protected:
+    virtual medAbstractViewInteractor* primaryInteractor(medAbstractData* data);
+    virtual QList<medAbstractInteractor*> extraInteractors(medAbstractData* data);
+    virtual medAbstractViewInteractor* primaryInteractor();
+    virtual QList<medAbstractInteractor*> extraInteractors();
+
     virtual bool initialiseInteractors(medAbstractData* data);
     virtual bool initialiseNavigators();
     virtual void removeInteractors(medAbstractData *data);
