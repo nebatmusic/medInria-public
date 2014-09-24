@@ -104,6 +104,7 @@ signals:
     void viewChanged();
     void viewContentChanged();
     void viewRemoved();
+    void requestHistogram(bool); //  hack for histogram
 
 
 protected:
