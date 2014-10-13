@@ -140,7 +140,6 @@ public:
                 m_cb->newSeed();
                 m_cb->wandTimer.start();
                 m_cb->setSeed(posImage);
-                m_cb->initiateRegionGrowth = true;
                 m_cb->updateWandRegion(imageView, posImage);
                 m_paintState = PaintState::None; //Wand operation is over
                 
@@ -984,15 +983,8 @@ AlgorithmPaintToolbox::RunConnectedFilter (MaskType::IndexType &index, unsigned 
         
     double valueMin =  value - m_wandRadius;
     double valueMax = value + m_wandRadius;
-    
-    if(valueMin < std::numeric_limits<typename IMAGE::PixelType>::min() )
-        valueMin = std::numeric_limits<typename IMAGE::PixelType>::min();
-
-    if(valueMax > std::numeric_limits<typename IMAGE::PixelType>::max() )
-        valueMax = std::numeric_limits<typename IMAGE::PixelType>::max();
-
-    ctiFilter->SetUpper( valueMax );
-    ctiFilter->SetLower( valueMin );
+    ctiFilter->SetUpper( m_wandUpperThreshold );
+    ctiFilter->SetLower( m_wandLowerThreshold );
 
     MaskType::RegionType regionRequested = tmpPtr->GetLargestPossibleRegion();
     regionRequested.SetIndex(planeIndex, index[planeIndex]);
