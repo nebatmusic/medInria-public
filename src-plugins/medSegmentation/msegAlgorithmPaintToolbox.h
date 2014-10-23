@@ -231,7 +231,7 @@ private:
     
     // undo_redo_feature's attributes
     QHash<medAbstractView*,QStack<PairListSlicePlaneId>*> * m_undoStacks,*m_redoStacks;
-    medAbstractImageView * currentView;
+    dtkSmartPointer<medAbstractImageView> currentView;
     medAbstractImageView * viewCopied;
 
     bool cursorOn;
