@@ -514,6 +514,7 @@ AlgorithmPaintToolbox::AlgorithmPaintToolbox(QWidget *parent ) :
     currentIdSlice = 0;
     undoRedoCopyPasteModeOn = false;
     cursorJustReactivated = true;
+    currentView = 0;
 
     //Shortcuts
     connect(undo_shortcut,SIGNAL(activated()),this,SLOT(undo()));
