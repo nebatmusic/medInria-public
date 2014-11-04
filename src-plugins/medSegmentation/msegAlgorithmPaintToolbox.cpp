@@ -622,6 +622,24 @@ void AlgorithmPaintToolbox::activateMagicWand()
     emit installEventFilterRequest(m_viewFilter);
 }
 
+void AlgorithmPaintToolbox::behaveWhenBodyHidden()
+{
+    qDebug()<<"HIIIIIIDDEN";
+    if ( this->m_strokeButton->isChecked() ) {
+        this->m_viewFilter->removeFromAllViews();
+        m_paintState = (PaintState::None);
+        updateButtons();
+        return;
+    }
+    if ( this->m_magicWandButton->isChecked() ) {
+        this->m_viewFilter->removeFromAllViews();
+        m_paintState = (PaintState::None);
+        newSeed(); // accept the current growth  
+        updateButtons();
+        return;
+    }
+}
+
 void AlgorithmPaintToolbox::updateMagicWandComputationSpeed()
 {
     if (m_wand3DRealTime->isChecked())
