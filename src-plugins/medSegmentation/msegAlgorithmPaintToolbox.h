@@ -134,7 +134,7 @@ public slots:
 
     void interpolate();
 
-    void behaveWhenBodyHidden();
+    void behaveWithBodyVisibility();
 
 protected:
     friend class ClickAndMoveEventFilter;

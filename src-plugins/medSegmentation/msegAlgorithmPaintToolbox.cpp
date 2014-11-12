@@ -622,9 +622,10 @@ void AlgorithmPaintToolbox::activateMagicWand()
     emit installEventFilterRequest(m_viewFilter);
 }
 
-void AlgorithmPaintToolbox::behaveWhenBodyHidden()
+void AlgorithmPaintToolbox::behaveWithBodyVisibility()
 {
-    qDebug()<<"HIIIIIIDDEN";
+    if(!((QWidget*)sender())->isHidden())
+        return;
     if ( this->m_strokeButton->isChecked() ) {
         this->m_viewFilter->removeFromAllViews();
         m_paintState = (PaintState::None);
@@ -696,15 +697,13 @@ void AlgorithmPaintToolbox::updateView()
     //                     //  on the view as long as the setData is not called for this view
     if (currentView)
     {
-        foreach(medDataIndex index, currentView->dataList())
+        medAbstractData* data = currentView->layerData(currentView->currentLayer());
+        if(!data)
+            return;
+        medImageMaskAnnotationData * existingMaskAnnData = dynamic_cast<medImageMaskAnnotationData *>(data);
+        if(!existingMaskAnnData)
         {
-            medAbstractData* data = medDataManager::instance()->retrieveData(index);
-            medImageMaskAnnotationData * existingMaskAnnData = dynamic_cast<medImageMaskAnnotationData *>(data);
-            if(!existingMaskAnnData)
-            {
-                setData( data );
-                break;
-            }
+            setData( data );
         }
     }
 }
