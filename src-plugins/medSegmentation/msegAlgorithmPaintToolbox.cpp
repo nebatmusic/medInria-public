@@ -319,6 +319,7 @@ AlgorithmPaintToolbox::AlgorithmPaintToolbox(QWidget *parent ) :
     m_interpolateButton = new QPushButton( tr("Interpolate") , displayWidget);
 
     m_magicWandButton = new QPushButton(tr("Magic Wand"), displayWidget);
+    m_magicWandButton->setObjectName("Magic Wand");
     QPixmap pixmap(":medSegmentation/pixmaps/magic_wand.png");
     QIcon buttonIcon(pixmap);
     m_magicWandButton->setIcon(buttonIcon);
@@ -362,6 +363,7 @@ AlgorithmPaintToolbox::AlgorithmPaintToolbox(QWidget *parent ) :
 
     m_wandUpperThresholdSlider = new QSlider(Qt::Horizontal, displayWidget);
     m_wandUpperThresholdSlider->setToolTip(tr("Upper Threshold"));
+    m_wandUpperThresholdSlider->setObjectName("Upper Threshold");
     m_wandUpperThresholdSlider->setValue(100);
     m_wandUpperThresholdSlider->setMinimum(0);
     m_wandUpperThresholdSlider->setMaximum(10000);
@@ -369,6 +371,7 @@ AlgorithmPaintToolbox::AlgorithmPaintToolbox(QWidget *parent ) :
 
     m_wandLowerThresholdSlider = new QSlider(Qt::Horizontal, displayWidget);
     m_wandLowerThresholdSlider->setToolTip(tr("Lower Threshold"));
+    m_wandLowerThresholdSlider->setObjectName("Lower Threshold");
     m_wandLowerThresholdSlider->setValue(100);
     m_wandLowerThresholdSlider->setMinimum(0);
     m_wandLowerThresholdSlider->setMaximum(10000);
@@ -402,6 +405,7 @@ AlgorithmPaintToolbox::AlgorithmPaintToolbox(QWidget *parent ) :
     connect(m_wandLowerThresholdSpinBox, SIGNAL(editingFinished()),this,SLOT(synchronizeWandSpinBoxesAndSliders()));
 
     m_wand3DCheckbox = new QCheckBox (tr("Activate 3D mode"), displayWidget);
+    m_wand3DCheckbox->setObjectName("Activate 3D mode");
     m_wand3DCheckbox->setCheckState(Qt::Unchecked);
     m_wand3DCheckbox->hide();
 
