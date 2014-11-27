@@ -86,9 +86,7 @@ public:
 
     int scalarValueCount(int value) {
         computeValueCounts();
-        if((ScalarType)value>=range_min && (ScalarType)value<=range_max)
-            return histogram->GetFrequency(value,0);
-        return -1;
+        return histogram->GetFrequency((ScalarType)value);
     }
 
     int scalarValueMinCount() {
