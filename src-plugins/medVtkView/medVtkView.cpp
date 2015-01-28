@@ -54,6 +54,11 @@ PURPOSE.
 # define CONTROL_KEY "Ctrl"
 #endif
 
+// declare x11-specific function to prevent the window manager breaking thumbnail generation
+#ifdef Q_WS_X11
+void qt_x11_wait_for_window_manager(QWidget*);
+#endif
+
 class medVtkViewPrivate
 {
 public:
@@ -446,6 +451,15 @@ QImage medVtkView::buildThumbnail(const QSize &size)
     d->viewWidget->resize(w,h);
     d->renWin->SetSize(w,h);
     render();
+
+#ifdef Q_WS_X11
+    // X11 likes to animate window creation, which means by the time we grab the
+    // widget, it might not be fully ready yet, in which case we get artefacts.
+    // Only necessary if rendering to an actual screen window.
+    if(d->renWin->GetOffScreenRendering() == 0) {
+        qt_x11_wait_for_window_manager(d->viewWidget);
+    }
+#endif
 
     QImage thumbnail = QPixmap::grabWidget(d->viewWidget).toImage();
 
