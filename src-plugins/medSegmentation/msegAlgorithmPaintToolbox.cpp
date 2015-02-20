@@ -315,6 +315,7 @@ AlgorithmPaintToolbox::AlgorithmPaintToolbox(QWidget *parent ) :
     m_strokeButton = new QPushButton( tr("Paint / Erase") , displayWidget);
     m_strokeButton->setToolTip(tr("Left-click: Start painting with specified label.\nRight-click: Erase painted voxels."));
     m_strokeButton->setCheckable(true);
+    m_strokeButton->setObjectName("paintButton");
 
     m_interpolateButton = new QPushButton( tr("Interpolate") , displayWidget);
 
@@ -436,8 +437,8 @@ AlgorithmPaintToolbox::AlgorithmPaintToolbox(QWidget *parent ) :
     magicWandLayout = new QFormLayout(this);
     magicWandLayout->addRow(m_wandInfo);
     magicWandLayout->addRow(magicWandCheckboxes);
-    magicWandLayout->addRow(magicWandLayout1);
     magicWandLayout->addRow(magicWandLayout2);
+    magicWandLayout->addRow(magicWandLayout1);
     magicWandLayout->addRow(magicWandLayout3);
     
     layout->addLayout(magicWandLayout);
@@ -959,13 +960,10 @@ void AlgorithmPaintToolbox::updateWandRegion(medAbstractImageView * view, QVecto
         return;
     }
 
-    //const QVector3D vpn = view->viewPlaneNormal();
-
     MaskType::IndexType index;
 
     bool isInside;
     unsigned int planeIndex = computePlaneIndex(vec,index,isInside);
-    //unsigned int currentSlice = index[planeIndex];
     if (isInside)
     {
         RunConnectedFilter < itk::Image <char,3> > (index,planeIndex);
@@ -1002,8 +1000,6 @@ AlgorithmPaintToolbox::RunConnectedFilter (MaskType::IndexType &index, unsigned 
     if (!seedPlanted)
         setSeedPlanted(true,index,planeIndex,value);
         
-    //double valueMin =  value - m_wandRadius;
-    //double valueMax = value + m_wandRadius;
     ctiFilter->SetUpper( m_wandUpperThreshold );
     ctiFilter->SetLower( m_wandLowerThreshold );
 
@@ -1721,9 +1717,6 @@ void AlgorithmPaintToolbox::copySliceMask()
     
     int slice = index3D[planeIndex];
 
-    //typedef itk::ImageLinearIteratorWithIndex< Mask2dType > LinearIteratorType;
-    //typedef itk::ImageSliceIteratorWithIndex< MaskType> SliceIteratorType;
-
     Mask2dType::RegionType region;
     Mask2dType::RegionType::SizeType size;
     Mask2dType::RegionType::IndexType index2d;
@@ -1732,9 +1725,10 @@ void AlgorithmPaintToolbox::copySliceMask()
 
     unsigned int i, j;
     char direction[2];
+    unsigned int planeInd = (unsigned int) planeIndex;
     for (i = 0, j = 0; i < 3; ++i )
     {
-        if (i != (unsigned int) planeIndex)
+        if (i != planeInd)
         {
             direction[j] = i;
             j++;
@@ -1783,13 +1777,12 @@ void AlgorithmPaintToolbox::pasteSliceMask()
     
     int slice = index3D[planeIndex];
 
-    Mask2dType::RegionType region;
-
     unsigned int i, j;
     char direction[2];
+    unsigned int planeInd = (unsigned int) planeIndex;
     for (i = 0, j = 0; i < 3; ++i )
     {
-        if (i != (unsigned int)planeIndex)
+        if (i != planeInd)
         {
             direction[j] = i;
             j++;
@@ -1986,8 +1979,7 @@ void AlgorithmPaintToolbox::setCursorOn(bool value)
 
 void AlgorithmPaintToolbox::interpolate()
 {
-    if(!m_itkMask)
-        return;
+    if(!m_itkMask) return;
 
     MaskType::IndexType index3D;
     QVector3D vec = currentView->mapDisplayToWorldCoordinates(QPointF(0,0));
@@ -2019,13 +2011,13 @@ void AlgorithmPaintToolbox::interpolate()
     Mask2dFloatType::Pointer distanceMapImg1   = Mask2dFloatType::New();
 
     bool isD0,isD1;
-    int sizeZ = size[2];
+    unsigned int sizeZ = size[2];
     img1 = extract2DImageSlice(m_itkMask, 2, 0, size, start);
     isD1 = isData(img1,label);
     isD0 = false;
     unsigned int slice0=0,slice1=0;
         
-        for (int i=0; i<(sizeZ-1); ++i)
+        for (unsigned int i=0; i<(sizeZ-1); ++i)
         {
             if (!isD0 && isD1)
             {
@@ -2049,10 +2041,12 @@ void AlgorithmPaintToolbox::interpolate()
                     unsigned int coord0[2],coord1[2];
                     computeCentroid(iterator0,coord0);
                     computeCentroid(iterator1,coord1);
-                    unsigned int center[2]={(unsigned int)(size[0]/2),(unsigned int)(size[1]/2)};
-                    int C0C1[2] = {(int)coord1[0]- (int)coord0[0],(int)coord1[1]-(int)coord0[1]};
-                    int C0center[2] = {(int)center[0]- (int)coord0[0],(int)center[1]-(int)coord0[1]};
-                    int C1center[2] = {(int)center[0]- (int)coord1[0],(int)center[1]-(int)coord1[1]};
+
+                    unsigned int center[2]={(unsigned int)size[0]/2u,(unsigned int)size[1]/2u};
+                    int C0C1[2] = {(int)(coord1[0]-coord0[0]),(int)(coord1[1]-coord0[1])};
+                    int C0center[2] = {(int)(center[0]-coord0[0]),(int)(center[1]-coord0[1])};
+                    int C1center[2] = {(int)(center[0]-coord1[0]),(int)(center[1]-coord1[1])};
+
                     Mask2dType::Pointer      img0tr             = Mask2dType::New();
                     Mask2dType::Pointer      img1tr             = Mask2dType::New();
                     img0tr = translateImageByVec(img0,C0center);
@@ -2062,12 +2056,14 @@ void AlgorithmPaintToolbox::interpolate()
                     distanceMapImg1 = computeDistanceMap(img1tr);
                     // For undo/redo purposes -------------------------
                     QList<int> listIdSlice;
-                    for (int j=(int)slice0+1; j<(int)slice1; ++j)
+
+                    for (unsigned int j=slice0+1; j<slice1; ++j)
                         listIdSlice.append(j);
                     addSliceToStack(currentView,planeIndex,listIdSlice); 
                     // -------------------------------------------------
                     // Interpolate the "j" intermediate slice (float) // float->unsigned char 0/255 and copy into output volume
-                    for (int j=(int)slice0+1; j<(int)slice1; ++j) // for each intermediate slice
+
+                    for (unsigned int j=slice0+1; j<slice1; ++j) // for each intermediate slice
                     {
                         double vec[2];
                         vec[0]= (((j-slice0)*(C0C1[0]/(float)(slice1-slice0))+coord0[0])-center[0]);

@@ -48,7 +48,10 @@ Plugin::~Plugin()
 bool Plugin::initialize()
 {
     if(!msegAnnotationInteractor::registered())
+    {
         qDebug() << "Unable to register v3dViewAnnotationInteractor";
+    }
+
     return AlgorithmInitializer::initialize();
 }
 
