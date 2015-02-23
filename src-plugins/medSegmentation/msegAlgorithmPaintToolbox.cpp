@@ -380,6 +380,7 @@ AlgorithmPaintToolbox::AlgorithmPaintToolbox(QWidget *parent ) :
 
     m_wandUpperThresholdSpinBox = new QDoubleSpinBox(displayWidget);
     m_wandUpperThresholdSpinBox->setToolTip(tr("Upper Threshold"));
+    m_wandUpperThresholdSpinBox->setObjectName("Upper Threshold");
     m_wandUpperThresholdSpinBox->setMinimum(0);
     m_wandUpperThresholdSpinBox->setMaximum(1000000);
     m_wandUpperThresholdSpinBox->setDecimals(2);
@@ -387,6 +388,7 @@ AlgorithmPaintToolbox::AlgorithmPaintToolbox(QWidget *parent ) :
 
     m_wandLowerThresholdSpinBox = new QDoubleSpinBox(displayWidget);
     m_wandLowerThresholdSpinBox->setToolTip(tr("Lower Threshold"));
+    m_wandLowerThresholdSpinBox->setObjectName("Lower Threshold");
     m_wandLowerThresholdSpinBox->setMinimum(0);
     m_wandLowerThresholdSpinBox->setMaximum(1000000);
     m_wandLowerThresholdSpinBox->setDecimals(2);
