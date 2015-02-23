@@ -1361,10 +1361,16 @@ void AlgorithmPaintToolbox::setParameter(int channel, int value) // LOIC's metho
 {
     seedPlanted = false; //prevent from crash when data not set
     if(channel == 0)
+    {
         m_wandLowerThresholdSlider->setValue(value);
-
+        m_wandLowerThresholdSpinBox->setValue(value);
+    }
     if (channel == 1)
+    {
         m_wandUpperThresholdSlider->setValue(value);
+        m_wandUpperThresholdSpinBox->setValue(value);
+    }
+
 }
 
 void AlgorithmPaintToolbox::undo()
