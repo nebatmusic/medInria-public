@@ -703,3 +703,8 @@ void vtkDataMeshInteractor::exportMeshWithLUT()
 
     medDataManager::instance()->exportData(dataToExport);
 }
+
+QString vtkDataMeshInteractor::name() const
+{
+    return "vtkDataMeshInteractor";
+}
