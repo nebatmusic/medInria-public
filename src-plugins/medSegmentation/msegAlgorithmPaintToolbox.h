@@ -67,6 +67,7 @@ public:
     AlgorithmPaintToolbox( QWidget *parent );
     ~AlgorithmPaintToolbox();
 
+    static bool registered();
     void setWorkspace(medAbstractWorkspace* workspace);
 
     inline void setPaintState( PaintState::E value){m_paintState = value;}

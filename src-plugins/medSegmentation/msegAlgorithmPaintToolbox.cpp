@@ -26,6 +26,7 @@
 #include <medAbstractDataFactory.h>
 #include <medTabbedViewContainers.h>
 #include <medViewContainer.h>
+#include <medToolBoxFactory.h>
 
 #include <dtkCore/dtkAbstractProcessFactory.h>
 #include <dtkLog/dtkLog.h>
@@ -540,6 +541,12 @@ AlgorithmPaintToolbox::~AlgorithmPaintToolbox()
 medAbstractData* AlgorithmPaintToolbox::processOutput()
 {
     return m_maskData;
+}
+
+bool AlgorithmPaintToolbox::registered()
+{
+    medToolBoxFactory* factory = medToolBoxFactory::instance();
+    return factory->registerToolBox<AlgorithmPaintToolbox> ();
 }
 
 void AlgorithmPaintToolbox::synchronizeWandSpinBoxesAndSliders()
