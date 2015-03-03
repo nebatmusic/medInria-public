@@ -180,6 +180,7 @@ private:
     QLabel *m_brushRadiusLabel;
     QShortcut *addBrushSize_shortcut, *reduceBrushSize_shortcut;
     double m_strokeRadius;
+    bool maskHasBeenSaved;
     //
 
     // Magic Wand's objects
