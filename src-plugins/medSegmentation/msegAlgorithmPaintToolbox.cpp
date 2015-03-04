@@ -69,6 +69,10 @@ public:
 
     virtual bool mousePressEvent(medAbstractView *view, QMouseEvent *mouseEvent )
     {
+        bool shouldWeRetrieveData = true;
+        if(m_paintState == m_cb->paintState())
+            shouldWeRetrieveData = false;
+
         m_paintState = m_cb->paintState();
 
         if ( this->m_paintState == PaintState::DeleteStroke )
@@ -97,22 +101,21 @@ public:
             return false;
         m_cb->setCurrentView(imageView);
 
-        // let's take the first non medImageMaskAnnotationData as the reference data
-        // TODO: to improve...
-        foreach(medDataIndex index, imageView->dataList())
-        {
-            medAbstractData *data = medDataManager::instance()->retrieveData(index);
-            if (!data)
-                continue;
+        //// let's take the first non medImageMaskAnnotationData as the reference data
+        //// TODO: to improve...
+        //for(unsigned int i=0; i<imageView->layersCount(); i++)
+        //{
+        //    medAbstractData *data = imageView->layerData(i);
+        //    if (!data)
+        //        continue;
 
-            medImageMaskAnnotationData * existingMaskAnnData = dynamic_cast<medImageMaskAnnotationData *>(data);
-            if(!existingMaskAnnData)
-            {
-                m_cb->setData( data );
-                break;
-            }
-        }
-        
+        //    medImageMaskAnnotationData * existingMaskAnnData = dynamic_cast<medImageMaskAnnotationData *>(data);
+        //    if(!existingMaskAnnData)
+        //    {
+        //        m_cb->setData( data );
+        //        break;
+        //    }
+        //}
         if (imageView->is2D())
         {
             // Convert mouse click to a 3D point in the image.
@@ -154,53 +157,55 @@ public:
         medAbstractImageView * imageView = dynamic_cast<medAbstractImageView *>(view);
         if(!imageView)
             return false;
-		
-		if (m_paintState == PaintState::None && (m_cb->m_paintState == PaintState::Stroke || m_cb->m_paintState == PaintState::DeleteStroke) && (m_cb->getCursorOn() || m_cb->undoRedoCopyPasteModeOn))
+
+        if (m_paintState == PaintState::None 
+            && (m_cb->m_paintState == PaintState::Stroke || m_cb->m_paintState == PaintState::DeleteStroke) 
+            && (/*m_cb->getCursorOn() ||*/ m_cb->undoRedoCopyPasteModeOn))
         {
             //m_cb->undoRedoCopyPasteModeOn = false;
             //m_cb->setCursorOn(true);
             mouseEvent->accept();
-            
+
             int elapsed = timer.elapsed();
 
             qDebug() << elapsed;
             if (elapsed<10) // 1000/24 (24 images per second)
                 return false;
 
-            if (!m_cb->cursorJustReactivated )
-                m_cb->removeCursorDisplay();  
-            else
-                m_cb->cursorJustReactivated  = false;
+            //if (!m_cb->cursorJustReactivated )
+            //    m_cb->removeCursorDisplay();  
+            //else
+            //    m_cb->cursorJustReactivated  = false;
 
             if (imageView->is2D())
             {
                 QVector3D posImage = imageView->mapDisplayToWorldCoordinates( mouseEvent->posF() );
-            
+
                 bool isInside;
                 MaskType::IndexType index;
                 unsigned int planeIndex = m_cb->computePlaneIndex(posImage,index,isInside);
                 unsigned int idSlice = index[planeIndex];
-                
+
                 if (planeIndex != m_cb->getCurrentPlaneIndex() || idSlice != m_cb->getCurrentIdSlice())
                 {
                     m_cb->setCurrentPlaneIndex(planeIndex);
                     m_cb->setCurrentIdSlice(idSlice);
                 }
-               
+
                 //Project vector onto plane
                 this->m_points.push_back(posImage);
                 m_cb->updateStroke( this,imageView );
                 timer.start();
             }
-           return mouseEvent->isAccepted();
+            return mouseEvent->isAccepted();
         }
-		
+
         if ( this->m_paintState == PaintState::None )
             return false;
-		
-		m_cb->setCursorOn(false); 
+
+        //m_cb->setCursorOn(false); 
         mouseEvent->accept();
-	
+
         if (imageView->is2D())
         {
             QVector3D posImage = imageView->mapDisplayToWorldCoordinates( mouseEvent->posF() );
@@ -224,8 +229,8 @@ public:
         {
             m_paintState = PaintState::None; //Painting is done
             m_cb->updateStroke(this, imageView);
-            m_cb->setCursorOn(true);
-            m_cb->cursorJustReactivated  = true;
+            //m_cb->setCursorOn(true);
+            //m_cb->cursorJustReactivated  = true;
             this->m_points.clear();
             timer.start();
             return true;
@@ -248,11 +253,11 @@ public:
             else 
                 m_cb->addBrushSize(numSteps);
             
-            if (!m_cb->cursorJustReactivated && m_paintState!=PaintState::Stroke )
-            {
-                m_cb->removeCursorDisplay();
-                m_cb->updateStroke(this,imageView);
-            }
+            //if (!m_cb->cursorJustReactivated && m_paintState!=PaintState::Stroke )
+            //{
+            //    //m_cb->removeCursorDisplay();
+            //    m_cb->updateStroke(this,imageView);
+            //}
             return true;   
         }
         return false;
@@ -264,11 +269,11 @@ public:
             view->setProperty("Cursor","Normal");
         else
             return false;*/
-        if (!m_cb->getCursorOn())
-            return false;
+        //if (!m_cb->getCursorOn())
+        //    return false;
         
-        m_cb->removeCursorDisplay();
-        m_cb->cursorJustReactivated  = true;
+        //m_cb->removeCursorDisplay();
+        //m_cb->cursorJustReactivated  = true;
 
         return true;
     }
@@ -516,12 +521,12 @@ AlgorithmPaintToolbox::AlgorithmPaintToolbox(QWidget *parent ) :
     m_undoStacks = new QHash<medAbstractView*,QStack<PairListSlicePlaneId>*>();
     m_redoStacks = new QHash<medAbstractView*,QStack<PairListSlicePlaneId>*>();
 
-    cursorOn = false;
-    cursorPixels = new QList<QPair<MaskType::IndexType,unsigned char> >();
+    //cursorOn = false;
+    //cursorPixels = new QList<QPair<MaskType::IndexType,unsigned char> >();
     currentPlaneIndex = 0;
     currentIdSlice = 0;
     undoRedoCopyPasteModeOn = false;
-    cursorJustReactivated = true;
+    //cursorJustReactivated = true;
     currentView = 0;
 
     //Shortcuts
@@ -766,6 +771,8 @@ void AlgorithmPaintToolbox::clearMask()
         {
             m_imageData->removeAttachedData(m_maskAnnotationData);
             maskHasBeenSaved = false;
+            //HACKKKKKK
+            setData(currentView->layerData(0));
         }
     }
 }
@@ -1508,11 +1515,11 @@ void AlgorithmPaintToolbox::redo()
 
     //undoRedoCopyPasteModeOn = true;
 
-    if (getCursorOn())
-    {
-        removeCursorDisplay(); // before doing anything we need to remove the cursor if it is on
-        cursorOn = false;
-    }
+    //if (getCursorOn())
+    //{
+    //    /removeCursorDisplay(); // before doing anything we need to remove the cursor if it is on
+    //    cursorOn = false;
+    //}
 
     QList<SlicePair> list;
     for(int i = 0;i<nextState.first.length();i++)
@@ -1769,11 +1776,11 @@ void AlgorithmPaintToolbox::copySliceMask()
 
     //undoRedoCopyPasteModeOn = true;
 
-    if (getCursorOn())
-    {
-        removeCursorDisplay(); // before doing anything we need to remove the cursor if it is on
-        cursorOn = false;
-    }
+    //if (getCursorOn())
+    //{
+    //    removeCursorDisplay(); // before doing anything we need to remove the cursor if it is on
+    //    cursorOn = false;
+    //}
 
     m_copy.first = Mask2dType::New();
 
@@ -1819,8 +1826,8 @@ void AlgorithmPaintToolbox::pasteSliceMask()
     addSliceToStack(currentView,planeIndex,listIdSlice);
     // -------------------------------------------------
 
-    if (cursorOn)
-        cursorJustReactivated = true;
+    //if (cursorOn)
+    //    cursorJustReactivated = true;
 
     pasteSliceToMask3D(m_copy.first,planeIndex,direction,slice);
 
@@ -1938,31 +1945,31 @@ void AlgorithmPaintToolbox::pasteSliceToMask3D(const itk::Image<unsigned char,2>
 
 void AlgorithmPaintToolbox::removeCursorDisplay()
 {
-    if (!currentView)
-        return;
-
-    /*if (!currentStateForCursor)
-        return;*/
-    
-    /*unsigned int i, j;
-    char direction[2];
-    for (i = 0, j = 0; i < 3; ++i )
-    {
-        if (i != currentPlaneIndex)
-        {
-            direction[j] = i;
-            j++;
-        }
-    }
-*/
-    //pasteSliceToMask3D(currentStateForCursor,currentPlaneIndex,direction,currentIdSlice);
-    for(int i = 0;i<cursorPixels->size();i++)
-        m_itkMask->SetPixel(cursorPixels->at(i).first,cursorPixels->at(i).second);
-
-    m_itkMask->Modified();
-    m_itkMask->GetPixelContainer()->Modified();
-    m_itkMask->SetPipelineMTime(m_itkMask->GetMTime());
-    m_maskAnnotationData->invokeModified();
+//    if (!currentView)
+//        return;
+//
+//    /*if (!currentStateForCursor)
+//        return;*/
+//    
+//    /*unsigned int i, j;
+//    char direction[2];
+//    for (i = 0, j = 0; i < 3; ++i )
+//    {
+//        if (i != currentPlaneIndex)
+//        {
+//            direction[j] = i;
+//            j++;
+//        }
+//    }
+//*/
+//    //pasteSliceToMask3D(currentStateForCursor,currentPlaneIndex,direction,currentIdSlice);
+//    for(int i = 0;i<cursorPixels->size();i++)
+//        m_itkMask->SetPixel(cursorPixels->at(i).first,cursorPixels->at(i).second);
+//
+//    m_itkMask->Modified();
+//    m_itkMask->GetPixelContainer()->Modified();
+//    m_itkMask->SetPipelineMTime(m_itkMask->GetMTime());
+//    m_maskAnnotationData->invokeModified();
 }
 
 void AlgorithmPaintToolbox::increaseBrushSize()
@@ -1970,11 +1977,11 @@ void AlgorithmPaintToolbox::increaseBrushSize()
     addBrushSize(1);
     if (!currentView)
         return;
-    if (cursorOn && !cursorJustReactivated) 
-    {
-        removeCursorDisplay();
-        updateStroke(m_viewFilter,currentView);
-    }
+    //if (cursorOn && !cursorJustReactivated) 
+    //{
+        //removeCursorDisplay();
+        //updateStroke(m_viewFilter,currentView);
+    //}
 }
 
 void AlgorithmPaintToolbox::reduceBrushSize()
@@ -1982,11 +1989,11 @@ void AlgorithmPaintToolbox::reduceBrushSize()
     addBrushSize(-1);
     if (!currentView)
         return;
-    if (cursorOn && !cursorJustReactivated)
-    {
-        removeCursorDisplay();
-        updateStroke(m_viewFilter,currentView);
-    }
+    //if (cursorOn && !cursorJustReactivated)
+    //{
+    //    //removeCursorDisplay();
+    //    updateStroke(m_viewFilter,currentView);
+    //}
 }
 
 void AlgorithmPaintToolbox::setCursorOn(bool value)
