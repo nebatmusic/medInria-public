@@ -1797,11 +1797,6 @@ void AlgorithmPaintToolbox::increaseBrushSize()
     addBrushSize(1);
     if (!currentView)
         return;
-    //if (cursorOn && !cursorJustReactivated) 
-    //{
-        //removeCursorDisplay();
-        //updateStroke(m_viewFilter,currentView);
-    //}
 }
 
 void AlgorithmPaintToolbox::reduceBrushSize()
@@ -1809,10 +1804,6 @@ void AlgorithmPaintToolbox::reduceBrushSize()
     addBrushSize(-1);
     if (!currentView)
         return;
-}
-
-void AlgorithmPaintToolbox::setCursorOn(bool value)
-{
 }
 
 void AlgorithmPaintToolbox::interpolate()

@@ -77,8 +77,6 @@ public:
     void setSeedPlanted(bool,MaskType::IndexType,unsigned int,double);
     void setSeed(QVector3D);
 
-    inline bool getCursorOn(){return cursorOn;};
-    void setCursorOn(bool value);
     inline void setCurrentIdSlice(unsigned int id){currentIdSlice = id;};
     inline unsigned int getCurrentIdSlice(){return currentIdSlice;};
     inline void setCurrentPlaneIndex(unsigned int index){currentPlaneIndex = index;};
@@ -121,7 +119,6 @@ public slots:
     void undo();
     void redo();
     void addSliceToStack(medAbstractView * view,const unsigned char planeIndex,QList<int> listIdSlice);
-    //void saveCurrentStateForCursor(medAbstractView * view,const unsigned char planeIndex,unsigned int idSlice);
     void onViewClosed();
 
     void newSeed();
@@ -164,8 +161,6 @@ protected:
 
     void copySliceFromMask3D(itk::Image<unsigned char,2>::Pointer copy,const char planeIndex,const char * direction,const unsigned int slice);
     void pasteSliceToMask3D(itk::Image<unsigned char,2>::Pointer image2D,const char planeIndex,const char * direction,const unsigned int slice);
-
-    void removeCursorDisplay();
 
 signals:
     void installEventFilterRequest(medViewEventFilter *filter);
@@ -238,12 +233,9 @@ private:
     medAbstractImageView* currentView;
     medAbstractImageView * viewCopied;
 
-    bool cursorOn;
-    QList<QPair<MaskType::IndexType,unsigned char> > * cursorPixels;
     unsigned int currentPlaneIndex; //plane Index of the current/last operation
     unsigned int currentIdSlice; // current slice;
     bool undoRedoCopyPasteModeOn;
-    bool cursorJustReactivated;
 
     template <typename IMAGE> void RunConnectedFilter (MaskType::IndexType &index, unsigned int planeIndex);
     template <typename IMAGE> void GenerateMinMaxValuesFromImage ();
