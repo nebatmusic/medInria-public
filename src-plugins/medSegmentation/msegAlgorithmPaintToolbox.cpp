@@ -97,21 +97,6 @@ public:
             return false;
         m_cb->setCurrentView(imageView);
 
-        //// let's take the first non medImageMaskAnnotationData as the reference data
-        //// TODO: to improve...
-        //for(unsigned int i=0; i<imageView->layersCount(); i++)
-        //{
-        //    medAbstractData *data = imageView->layerData(i);
-        //    if (!data)
-        //        continue;
-
-        //    medImageMaskAnnotationData * existingMaskAnnData = dynamic_cast<medImageMaskAnnotationData *>(data);
-        //    if(!existingMaskAnnData)
-        //    {
-        //        m_cb->setData( data );
-        //        break;
-        //    }
-        //}
         if (imageView->is2D())
         {
             // Convert mouse click to a 3D point in the image.
@@ -668,7 +653,7 @@ void AlgorithmPaintToolbox::updateView()
     //                     //  on the view as long as the setData is not called for this view
     if (currentView)
     {
-        medAbstractData* data = currentView->layerData(currentView->currentLayer());
+        medAbstractData* data = currentView->layerData(0);
         if(!data)
             return;
         medImageMaskAnnotationData * existingMaskAnnData = dynamic_cast<medImageMaskAnnotationData *>(data);
@@ -717,7 +702,6 @@ void AlgorithmPaintToolbox::clearMask()
         {
             m_imageData->removeAttachedData(m_maskAnnotationData);
             maskHasBeenSaved = false;
-            //HACKKKKKK
             setData(currentView->layerData(0));
         }
     }
@@ -915,7 +899,7 @@ void AlgorithmPaintToolbox::updateWandRegion(medAbstractImageView * view, QVecto
    
     if ( !m_imageData )
     {
-        this->setData(view->layerData(view->currentLayer()));
+        this->setData(view->layerData(0));
     }
     if (!m_imageData) {
         dtkWarn() << "Could not set data";
@@ -1110,7 +1094,7 @@ void AlgorithmPaintToolbox::updateStroke(ClickAndMoveEventFilter * filter, medAb
     const double radius = m_strokeRadius; // in image units.
 
     if ( !m_imageData ) {
-        this->setData(view->layerData(view->currentLayer()));
+        this->setData(view->layerData(0));
     }
     if (!m_imageData) {
         dtkWarn() << "Could not set data";
