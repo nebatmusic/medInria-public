@@ -38,6 +38,7 @@
 #include <vtkMetaDataSet.h>
 #include <vtkMetaDataSetSequence.h>
 #include <vtkDataArrayCollection.h>
+#include <vtkDataMesh.h>
 
 #include <dtkLog/dtkLog.h>
 
@@ -45,12 +46,14 @@
 #include <medAbstractParameter.h>
 #include <medBoolParameter.h>
 #include <medDoubleParameter.h>
+#include <medDataManager.h>
 #include <medStringListParameter.h>
 #include <medAbstractData.h>
 #include <medViewFactory.h>
 #include <medAbstractImageView.h>
 #include <medIntParameter.h>
 #include <medVtkViewBackend.h>
+#include <vtkMetaSurfaceMesh.h>
 #include <vtkScalarBarActor.h>
 
 #include <vector>
@@ -86,6 +89,7 @@ public:
     medDoubleParameter *minRange,*maxRange;
 
     QPushButton * range_button;
+    QPushButton * export_button;
     
     QList <medAbstractParameter*> parameters;
 
@@ -117,6 +121,9 @@ vtkDataMeshInteractor::vtkDataMeshInteractor(medAbstractView *parent):
     d->range_button = new QPushButton("Modify Range");
     d->range_button->setCheckable(true);
     connect(d->range_button,SIGNAL(toggled(bool)),this,SLOT(showRangeWidgets(bool)));
+
+    d->export_button = new QPushButton("Export with LUT");
+    connect(d->export_button,SIGNAL(clicked()),this,SLOT(exportMeshWithLUT()));
 }
 
 
@@ -389,6 +396,7 @@ void vtkDataMeshInteractor::setAttribute(const QString & attributeName)
         mapper3d->SelectColorArray(qPrintable(attributeName));
 
         d->range_button->show();
+        d->export_button->show();
         double * range = d->metaDataSet->GetCurrentScalarRange();
         d->minRange->setRange(range[0],range[1]);
         d->maxRange->setRange(range[0],range[1]);
@@ -406,6 +414,8 @@ void vtkDataMeshInteractor::setAttribute(const QString & attributeName)
     {
         d->range_button->setChecked(false);
         d->range_button->hide();
+        d->export_button->setChecked(false);
+        d->export_button->hide();
         if(d->LUTParam)
             d->LUTParam->hide();
         if(d->colorParam)
@@ -573,6 +583,7 @@ QWidget* vtkDataMeshInteractor::buildToolBoxWidget()
     maxRangeLayout->addWidget(d->maxRange->getSpinBox());
     layout->addRow(d->minRange->getLabel(),minRangeLayout);
     layout->addRow(d->maxRange->getLabel(),maxRangeLayout);
+    layout->addRow(d->export_button);
     showRangeWidgets(false);
     return toolbox;
 }
@@ -649,7 +660,7 @@ void vtkDataMeshInteractor::updateRange()
     
     if (!lut)
         return;
-    
+
     lut->SetRange(d->minRange->value(),d->maxRange->value());
     mapper2d->SetLookupTable(lut);
     mapper3d->SetLookupTable(lut);
@@ -671,4 +682,25 @@ void vtkDataMeshInteractor::showRangeWidgets(bool checked)
         d->maxRange->hide();
         d->minRange->hide();
     }
+}
+
+void vtkDataMeshInteractor::exportMeshWithLUT()
+{
+    dtkSmartPointer<vtkDataMesh> dataToExport = new vtkDataMesh;
+    dataToExport->setData(d->metaDataSet);
+
+    vtkImageView2D * view2d = static_cast<medVtkViewBackend*>(d->view->backend())->view2D;
+    vtkImageView3D * view3d = static_cast<medVtkViewBackend*>(d->view->backend())->view3D;
+
+    vtkActor * actor2d = static_cast<vtkActor*>(view2d->FindDataSetActor(d->metaDataSet->GetDataSet()));
+    vtkActor * actor3d = static_cast<vtkActor*>(view3d->FindDataSetActor(d->metaDataSet->GetDataSet()));
+    vtkMapper * mapper2d = actor2d->GetMapper();
+    vtkMapper * mapper3d = actor3d->GetMapper();
+    vtkLookupTable * lut = static_cast<vtkLookupTable*>(mapper3d->GetLookupTable());
+//    if (!lut)
+//        vtkLookupTable * lut = static_cast<vtkLookupTable*>(mapper2d->GetLookupTable());
+    if (lut)
+        d->metaDataSet->GetCurrentScalarArray()->SetLookupTable(lut);
+
+    medDataManager::instance()->exportData(dataToExport);
 }
