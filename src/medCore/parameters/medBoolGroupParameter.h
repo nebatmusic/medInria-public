@@ -46,6 +46,10 @@ public:
     virtual QWidget* getWidget();
     virtual QList<medAbstractParameter*> parametersCandidateToPool() const;
 
+    void toXMLNode(QDomDocument *doc, QDomElement *currentNode);
+
+
+    virtual void trigger();
 
 private slots:
     void removeInternPushButtonGroup();

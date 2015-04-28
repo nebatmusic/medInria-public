@@ -250,3 +250,26 @@ void medBoolGroupParameter::removeInternRadioButtonGroup()
     d->radioButtonLayout = NULL;
 }
 
+void medBoolGroupParameter::trigger()
+{
+    //TODO: to check
+    if(!d->parameters.isEmpty())
+        d->parameters[0]->trigger();
+
+}
+
+void medBoolGroupParameter::toXMLNode(QDomDocument *doc, QDomElement *currentNode)
+{
+    medAbstractParameter::toXMLNode(doc,currentNode);
+    QDomElement groupNode=doc->createElement("group");
+    QDomElement sizeNode=doc->createElement("size");
+    sizeNode.appendChild(doc->createTextNode(QString::number(d->parameters.size())));
+    for(int i=0;i<d->parameters.size();i++)
+    {
+        QDomElement paramNode=doc->createElement("parameter");
+        paramNode.setAttribute("n",i);
+        d->parameters[i]->toXMLNode(doc,&paramNode);
+        groupNode.appendChild(paramNode);
+    }
+    currentNode->appendChild(groupNode);
+}
