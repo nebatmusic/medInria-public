@@ -434,3 +434,5 @@ void medAbstractView::setTransferFunctions( QList<double> scalars,
 {
     DTK_DEFAULT_IMPLEMENTATION;
 }
+
+void medAbstractView::restoreState(QDomElement* element){}

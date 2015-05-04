@@ -26,6 +26,7 @@ public:
     double min;
     double max;
     double step;
+    int decimals;
 
     QDoubleSpinBox *spinBox;
     QSlider *slider;
@@ -114,6 +115,15 @@ void medDoubleParameter::setSingleStep(double step)
         d->spinBox->setSingleStep(step);
     if(d->slider)
         d->slider->setSingleStep(convertToInt(step));
+}
+
+
+void medDoubleParameter::setDecimals(unsigned int decimals)
+{
+    d->decimals = decimals;
+
+    if(d->spinBox)
+        d->spinBox->setDecimals(decimals);
 }
 
 
