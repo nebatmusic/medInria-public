@@ -396,7 +396,6 @@ void vtkDataMeshInteractor::setAttribute(const QString & attributeName)
         mapper3d->SelectColorArray(qPrintable(attributeName));
 
         d->range_button->show();
-        d->export_button->show();
         double * range = d->metaDataSet->GetCurrentScalarRange();
         d->minRange->setRange(range[0],range[1]);
         d->maxRange->setRange(range[0],range[1]);
@@ -414,8 +413,6 @@ void vtkDataMeshInteractor::setAttribute(const QString & attributeName)
     {
         d->range_button->setChecked(false);
         d->range_button->hide();
-        d->export_button->setChecked(false);
-        d->export_button->hide();
         if(d->LUTParam)
             d->LUTParam->hide();
         if(d->colorParam)
@@ -699,7 +696,7 @@ void vtkDataMeshInteractor::exportMeshWithLUT()
     vtkLookupTable * lut = static_cast<vtkLookupTable*>(mapper3d->GetLookupTable());
 //    if (!lut)
 //        vtkLookupTable * lut = static_cast<vtkLookupTable*>(mapper2d->GetLookupTable());
-    if (lut)
+    if (lut && d->metaDataSet->GetCurrentScalarArray())
         d->metaDataSet->GetCurrentScalarArray()->SetLookupTable(lut);
 
     medDataManager::instance()->exportData(dataToExport);

@@ -154,8 +154,12 @@ void vtkMetaSurfaceMesh::ReadVtkFile (const char* filename)
     }
     if(reader->GetOutput()->GetPointData()->GetScalars())
         if(reader->GetOutput()->GetPointData()->GetScalars()->GetLookupTable())
+        {
             this->SetLookupTable(reader->GetOutput()->GetPointData()->GetScalars()->GetLookupTable());
-
+            //For CARTO files, we force the LUT to be the one in the vtk file
+            if (reader->GetHeader())
+                this->GetPolyData()->GetPointData()->GetScalars()->SetLookupTable(reader->GetOutput()->GetPointData()->GetScalars()->GetLookupTable());
+        }
   }
   catch (vtkErrorCode::ErrorIds error)
   {
