@@ -89,6 +89,7 @@ void medStartupSettingsWidget::read()
         index = 0;
     if (index > d->defaultStartingArea->count() -1)
         index = d->defaultStartingArea->count() -1;
+    index = 2; //Force Visualization workspace
 
     d->defaultStartingArea->setCurrentIndex(index);
 

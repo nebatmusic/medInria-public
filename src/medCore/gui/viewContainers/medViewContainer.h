@@ -91,6 +91,7 @@ public slots:
 
     void highlight(QString color = "#FFAA88");
     void unHighlight();
+    void loadScene();
 
 signals:
     void maximized(QUuid uuid, bool maximized);
@@ -121,6 +122,7 @@ protected slots:
     void openFromSystem();
     void updateToolBar();
     void dataReady(medDataIndex index, QUuid uuid);
+    void open_waitForImportedSignal(medDataIndex, QUuid);
 
 private slots:
     void removeInternView();

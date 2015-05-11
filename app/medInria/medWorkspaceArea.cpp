@@ -105,10 +105,10 @@ medWorkspaceArea::medWorkspaceArea(QWidget *parent) : QWidget(parent), d(new med
         d->splitter->setOrientation(Qt::Horizontal);
         //viewcontainer size
         int viewContainerSize = QWIDGETSIZE_MAX -
-            d->navigatorContainer->minimumWidth()-
+            //d->navigatorContainer->minimumWidth()-
             d->toolBoxContainer->minimumWidth();
         QList<int> sizes;
-        sizes.append(d->navigatorContainer->minimumWidth());
+        sizes.append(0); //hide database
         sizes.append(viewContainerSize);
         sizes.append(d->toolBoxContainer->minimumWidth());
         d->splitter->setSizes(sizes);

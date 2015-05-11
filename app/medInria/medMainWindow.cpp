@@ -320,7 +320,8 @@ void medMainWindow::restoreSettings()
 {
     medSettingsManager * mnger = medSettingsManager::instance();
 
-    const AreaType areaIndex = static_cast<AreaType>(mnger->value("medMainWindow","StartingArea", 0).toInt());
+    const AreaType areaIndex = WorkSpace;//static_cast<AreaType>(mnger->value("startup","default_starting_area", 0).toInt());
+    
     switchToArea(areaIndex);
 
     this->restoreState(   mnger->value("medMainWindow", "state").toByteArray());
@@ -370,7 +371,8 @@ void medMainWindow::switchToArea(const AreaType areaIndex)
         break;
 
     case medMainWindow::WorkSpace:
-        this->switchToWorkspaceArea();
+        //this->switchToWorkspaceArea();
+        showWorkspace(medVisualizationWorkspace::staticIdentifier());
         break;
     default:
         this->switchToHomepageArea();
@@ -740,7 +742,7 @@ void medMainWindow::showWorkspace(QString workspace)
     this->switchToWorkspaceArea();
     medWorkspaceFactory::Details* details = medWorkspaceFactory::instance()->workspaceDetailsFromId(workspace);
 
-    d->quickAccessButton->setText(tr("Workspace: ") + details->name);
+    //d->quickAccessButton->setText(tr("Workspace: ") + details->name);
     d->shortcutAccessWidget->updateSelected(workspace);
     d->quickAccessWidget->updateSelected(workspace);
     d->workspaceArea->setCurrentWorkspace(workspace);
