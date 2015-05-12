@@ -75,6 +75,8 @@ public:
     void addColorIndicator(QColor color, QString description="");
     void removeColorIndicator(QColor color);
 
+    void open(const QString & path);
+
 public slots:
     void setView(medAbstractView* view);
     void removeView();

@@ -59,6 +59,7 @@ public:
     bool multiLayer;
     bool userPoolable;
     QUuid expectedUuid;
+    QList<QUuid> expectedUuids;
 
     QGridLayout* mainLayout;
     QHBoxLayout* toolBarLayout;
@@ -100,8 +101,9 @@ medViewContainer::medViewContainer(medViewContainerSplitter *parent): QFrame(par
 
     d->defaultWidget = new QWidget;
     d->defaultWidget->setObjectName("defaultWidget");
-    QLabel *defaultLabel = new QLabel(tr("Drag'n drop series here from the left panel or"));
-    QPushButton *openButton= new QPushButton(tr("(Not working yet) Load a scene from your system"));
+    QLabel *defaultLabel = new QLabel(tr("Optional text"));
+    QPushButton *openButton= new QPushButton(tr("Load a scene from your system (Ctrl/Cmd+O)"));
+    openButton->setShortcut(Qt::ControlModifier + Qt::Key_O);
     QVBoxLayout *defaultLayout = new QVBoxLayout(d->defaultWidget);
     defaultLayout->addWidget(defaultLabel);
     defaultLayout->addWidget(openButton);
@@ -642,8 +644,8 @@ void medViewContainer::addData(medAbstractData *data)
 
 void medViewContainer::addData(medDataIndex index)
 {
-    if( ! d->expectedUuid.isNull())
-        return; // we're already waiting for a import to finish, don't accept other data
+    //if( ! d->expectedUuid.isNull())
+    //    return; // we're already waiting for a import to finish, don't accept other data
     this->addData(medDataManager::instance()->retrieveData(index));
 }
 
@@ -825,7 +827,6 @@ void medViewContainer::loadScene()
 			qWarning()<< "failed to read workspace";
 			return;
 		}
-		//showWorkspace(workspaceName);
 		
 	}
 	//call dedicated method to read each view folder
@@ -860,25 +861,15 @@ void medViewContainer::loadScene()
 		}
 		QDomNodeList layersNodes=viewInfo.elementsByTagName("layer");
 		
-		//if(hasContainer)
-		//{//need to create a new view, to avoid the new layers to be stacked with the previous ones
-		//	//retrieve existing container
-		//	medViewContainer *formerContainer = medViewContainerManager::instance()->container(d->workspaceArea->currentWorkspace()->stackedViewContainers()->containersSelected().first());
-		//	//split existing container
-  //          formerContainer->split();
-		//}
-
 		for(int j=0;j<layersNodes.size();j++)
 		{
 			QDomElement layerElement=layersNodes.item(j).toElement();
 			QString fileName=layerElement.attribute("filename");
-            //open(mappingFileInfo.dir().canonicalPath()+"/"+fileName);
-            connect(medDataManager::instance(), SIGNAL(dataImported(medDataIndex,QUuid)), this, SLOT(open_waitForImportedSignal(medDataIndex,QUuid)));
-            d->expectedUuid =medDataManager::instance()->importPath(mappingFileInfo.dir().canonicalPath()+"/"+fileName, true, false);
-            //this->addData(medDataManager::instance()->retrieveData(index));
+            QString path = mappingFileInfo.dir().canonicalPath()+"/"+fileName;
+            open(path);
 
             //  save last directory opened in settings.
-            medSettingsManager::instance()->setValue("path", "medViewContainer", mappingFileInfo.dir().canonicalPath()+"/"+fileName);
+            medSettingsManager::instance()->setValue("path", "medViewContainer", path);
 
 			if(view())
 				view()->restoreState(&layerElement);
@@ -890,12 +881,26 @@ void medViewContainer::loadScene()
     update();
 }
 
+void medViewContainer::open(const QString & path)
+{
+    QEventLoop loop;
+    QUuid uuid = medDataManager::instance()->importPath(path, false);
+    d->expectedUuids.append(uuid);
+    connect(medDataManager::instance(), SIGNAL(dataImported(medDataIndex,QUuid)),
+            this, SLOT(open_waitForImportedSignal(medDataIndex,QUuid)));
+    while( d->expectedUuids.contains(uuid)) 
+    {
+        loop.processEvents(QEventLoop::ExcludeUserInputEvents);
+    }
+}
+
 void medViewContainer::open_waitForImportedSignal(medDataIndex index, QUuid uuid)
 {
-    //if(d->expectedUuids.contains(uuid)) {
-    //    d->expectedUuids.removeAll(uuid);
-    qDebug()<<"OPEN file";
-    this->addData(index);
+    if(d->expectedUuids.contains(uuid)) 
+    {
+        d->expectedUuids.removeAll(uuid);
         disconnect(medDataManager::instance(),SIGNAL(dataImported(medDataIndex,QUuid)),
                    this,SLOT(open_waitForImportedSignal(medDataIndex,QUuid)));
+        this->addData(index);
+    }
 }

@@ -235,8 +235,8 @@ QWidget* medAbstractImageView::toolBarWidget()
 {
     QWidget* toolbar = medAbstractView::toolBarWidget();
 
-    if(toolbar->layout())
-        toolbar->layout()->addWidget(this->fourViewsParameter()->getPushButton());
+    //if(toolbar->layout())
+    //    toolbar->layout()->addWidget(this->fourViewsParameter()->getPushButton());
 
     return toolbar;
 }

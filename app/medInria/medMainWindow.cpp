@@ -217,6 +217,7 @@ medMainWindow::medMainWindow ( QWidget *parent ) : QMainWindow ( parent ), d ( n
     d->saveSceneButton->setObjectName("saveSceneButton");
     //d->saveSceneButton->setShortcut(Qt::AltModifier + Qt::Key_S);
     d->saveSceneButton->setToolTip(tr("Save scene"));
+    d->saveSceneButton->hide();
     QObject::connect(d->saveSceneButton, SIGNAL(clicked()), this, SLOT(saveScene()));
 
 	QIcon loadSceneIcon;
@@ -226,6 +227,7 @@ medMainWindow::medMainWindow ( QWidget *parent ) : QMainWindow ( parent ), d ( n
     d->loadSceneButton->setObjectName("loadSceneButton");
     //d->loadSceneButton->setShortcut(Qt::AltModifier + Qt::Key_S);
     d->loadSceneButton->setToolTip(tr("Load scene"));
+    d->loadSceneButton->hide();
     QObject::connect(d->loadSceneButton, SIGNAL(clicked()), this, SLOT(loadScene()));
 
     QIcon cameraIcon;
@@ -245,6 +247,7 @@ medMainWindow::medMainWindow ( QWidget *parent ) : QMainWindow ( parent ), d ( n
     d->adjustSizeButton->setObjectName("adjustSizeButton");
     d->adjustSizeButton->setShortcut(Qt::AltModifier + Qt::Key_A);
     d->adjustSizeButton->setToolTip(tr("Adjust containers size"));
+    d->adjustSizeButton->hide();
     QObject::connect(d->adjustSizeButton, SIGNAL(clicked()), this, SLOT(adjustContainersSize()));
 
 
