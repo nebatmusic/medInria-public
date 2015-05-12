@@ -225,11 +225,11 @@ void medAbstractWorkspace::updateNavigatorsToolBox()
         }
     }
     // add the navigators widgets
-    d->navigatorToolBox->show();
+    //d->navigatorToolBox->show();
     foreach(QWidget* navigator, navigators)
     {
         d->navigatorToolBox->addWidget(navigator);
-        navigator->show();
+        //navigator->show();
     }
 
     // add link parameter
@@ -266,11 +266,11 @@ void medAbstractWorkspace::updateMouseInteractionToolBox()
         }
     }
     // add the navigators widgets
-    d->mouseInteractionToolBox->show();
+    //d->mouseInteractionToolBox->show();
     foreach(QWidget* navigator, navigators)
     {
         d->mouseInteractionToolBox->addWidget(navigator);
-        navigator->show();
+        //navigator->show();
     }
 }
 
@@ -459,7 +459,7 @@ void medAbstractWorkspace::updateInteractorsToolBox()
     QList<QString> interactorsIdentifier;
     QUuid containerUuid = d->containerForLayerWidgetsItem.value(item);
     medViewContainer *container = containerMng->container(containerUuid);
-    container->highlight("#FF8844");
+    //container->highlight("#FF8844");
 
     medAbstractLayeredView *view = dynamic_cast<medAbstractLayeredView*>(container->view());
 

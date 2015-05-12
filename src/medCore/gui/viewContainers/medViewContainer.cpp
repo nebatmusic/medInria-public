@@ -111,6 +111,7 @@ medViewContainer::medViewContainer(medViewContainerSplitter *parent): QFrame(par
     d->menuButton->setIcon(QIcon(":/pixmaps/tools.png"));
     d->menuButton->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
     d->menuButton->setToolTip(tr("Tools"));
+    d->menuButton->hide();
 
     d->toolBarMenu = new QMenu(this);
     connect(d->menuButton, SIGNAL(clicked()), this, SLOT(popupMenu()));
@@ -127,6 +128,7 @@ medViewContainer::medViewContainer(medViewContainerSplitter *parent): QFrame(par
     d->closeContainerButton->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
     d->closeContainerButton->setToolTip(tr("Close"));
     d->closeContainerButton->setFocusPolicy(Qt::NoFocus);
+    d->closeContainerButton->hide();
 
     d->vSplitAction = new QAction(tr("V split"), d->toolBarMenu);
     d->vSplitAction->setIcon(QIcon(":/pixmaps/splitbutton_vertical.png"));
@@ -144,6 +146,7 @@ medViewContainer::medViewContainer(medViewContainerSplitter *parent): QFrame(par
     d->histogramButton->setText("Hist");
     d->histogramButton->setCheckable(true);
     d->histogramButton->setChecked(false);
+    d->histogramButton->hide();
     //d->histogramButton->setIcon(QIcon(":/medGui/pixmaps/.png"));
     d->histogramButton->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
     d->histogramButton->setFocusPolicy(Qt::NoFocus);

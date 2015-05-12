@@ -150,6 +150,7 @@ medMainWindow::medMainWindow ( QWidget *parent ) : QMainWindow ( parent ), d ( n
     d->quickAccessButton->setIcon(QIcon(":music_logo_small.png"));
     d->quickAccessButton->setCursor(Qt::PointingHandCursor);
     d->quickAccessButton->setText ( tr("Workspaces access menu") );
+    d->quickAccessButton->hide();
     connect(d->quickAccessButton, SIGNAL(clicked()), this, SLOT(toggleQuickAccessVisibility()));
 
     d->quickAccessWidget = new medQuickAccessMenu(true, this);

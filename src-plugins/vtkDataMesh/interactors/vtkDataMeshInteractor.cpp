@@ -568,8 +568,9 @@ QWidget* vtkDataMeshInteractor::buildToolBoxWidget()
 {
     QWidget *toolbox = new QWidget;
     QFormLayout *layout = new QFormLayout(toolbox);
-    if(d->attributesParam)
-        layout->addRow(d->attributesParam->getLabel(), d->attributesParam->getComboBox());
+    // MUSIC VIEWER spcecific: hide attributes
+    //if(d->attributesParam) 
+    //    layout->addRow(d->attributesParam->getLabel(), d->attributesParam->getComboBox());
 
     layout->addRow(d->LUTParam->getLabel(), d->LUTParam->getComboBox());
     layout->addRow(d->edgeVisibleParam->getLabel(), d->edgeVisibleParam->getCheckBox());

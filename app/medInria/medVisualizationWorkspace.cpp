@@ -35,20 +35,15 @@ medVisualizationWorkspace::medVisualizationWorkspace(QWidget *parent) : medAbstr
 
     medLayerParameterGroup *layerGroup1 = new medLayerParameterGroup("Layer Group 1", this, this->identifier());
     layerGroup1->setLinkAllParameters(true);
-
-    medToolBox * manualRegistrationToolBox = medToolBoxFactory::instance()->createToolBox("manualRegistrationToolBox");
-    if(!manualRegistrationToolBox)
-        return;
-    manualRegistrationToolBox->setWorkspace(this);
-    this->addToolBox(manualRegistrationToolBox);
 }
 
 void medVisualizationWorkspace::setupViewContainerStack()
 {
     if (!stackedViewContainers()->count()) {
         this->stackedViewContainers()->addContainerInTab(this->name());
+        this->stackedViewContainers()->containersInTab(0).at(0)->setClosingMode(medViewContainer::CLOSE_BUTTON_HIDDEN);
     }
-    this->stackedViewContainers()->unlockTabs();
+    this->stackedViewContainers()->lockTabs();
 }
 
 medVisualizationWorkspace::~medVisualizationWorkspace(void)
