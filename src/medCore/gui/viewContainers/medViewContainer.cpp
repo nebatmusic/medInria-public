@@ -38,6 +38,8 @@
 #include <medAbstractInteractor.h>
 #include <medPoolIndicator.h>
 
+//MUSIC VIEWER
+#include <medDatabaseNonPersistentController.h>
 
 
 class medViewContainerPrivate
@@ -503,6 +505,10 @@ void medViewContainer::removeView()
         return;
 
     delete d->view;
+
+    //Data displayed is data of the nonPersDB (cf medNavxFilesToSaveDialog in MUSIC plugins)
+    medDatabaseNonPersistentController::instance()->removeAll();
+
     // removeInternView should be called, so no need to set d->view to NULL
     // or whatever else
 }
