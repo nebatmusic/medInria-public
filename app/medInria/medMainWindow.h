@@ -89,6 +89,8 @@ private slots:
 
     void availableSpaceOnStatusBar();
 
+    void showInfo();
+
     /**
      * @brief Overload existing showFullScreen().
      *

@@ -41,6 +41,8 @@
 #include <medAbstractWorkspace.h>
 #include <medVisualizationWorkspace.h>
 
+#include <medInfoDialog.h>
+
 #ifdef Q_OS_MAC
 # define CONTROL_KEY "Meta"
 #else
@@ -184,7 +186,7 @@ medMainWindow::medMainWindow ( QWidget *parent ) : QMainWindow ( parent ), d ( n
     d->quitButton->setIcon(quitIcon);
     d->quitButton->setObjectName("quitButton");
     connect(d->quitButton, SIGNAL( pressed()), this, SLOT (close()));
-    d->quitButton->setToolTip(tr("Close MUSIC"));
+    d->quitButton->setToolTip(tr("Close MUSIC Viewer"));
 
     //  Setup Fullscreen Button
     QIcon fullscreenIcon ;
@@ -208,6 +210,9 @@ medMainWindow::medMainWindow ( QWidget *parent ) : QMainWindow ( parent ), d ( n
 #endif
     connect ( d->fullscreenButton, SIGNAL ( toggled(bool) ),
                        this, SLOT ( setFullScreen(bool) ) );
+    
+    QPushButton* infoButton = new QPushButton("INFO");
+    QObject::connect(infoButton, SIGNAL(clicked()), this, SLOT(showInfo()));
 
     QIcon saveSceneIcon;
     saveSceneIcon.addPixmap(QPixmap(":icons/saveScene.png"),QIcon::Normal);
@@ -258,6 +263,7 @@ medMainWindow::medMainWindow ( QWidget *parent ) : QMainWindow ( parent ), d ( n
     rightEndButtonsLayout->setSpacing ( 5 );
     rightEndButtonsLayout->addWidget( d->loadSceneButton );
     rightEndButtonsLayout->addWidget( d->saveSceneButton );
+    rightEndButtonsLayout->addWidget( infoButton );
     rightEndButtonsLayout->addWidget( d->adjustSizeButton );
     rightEndButtonsLayout->addWidget( d->screenshotButton );
     rightEndButtonsLayout->addWidget( d->fullscreenButton );
@@ -299,11 +305,11 @@ medMainWindow::medMainWindow ( QWidget *parent ) : QMainWindow ( parent ), d ( n
     connect(medMessageController::instance(), SIGNAL(addMessage(medMessage*)),    d->statusBar, SLOT(addMessage(medMessage*)));
     connect(medMessageController::instance(), SIGNAL(removeMessage(medMessage*)), d->statusBar, SLOT(removeMessage(medMessage*)));
 
-    d->shortcutShortcut = new QShortcut(QKeySequence(tr(CONTROL_KEY "+Space")),
-                                                     this,
-                                                     SLOT(showShortcutAccess()),
-                                                     SLOT(showShortcutAccess()),
-                                                     Qt::ApplicationShortcut);
+    //d->shortcutShortcut = new QShortcut(QKeySequence(tr(CONTROL_KEY "+Space")),
+    //                                                 this,
+    //                                                 SLOT(showShortcutAccess()),
+    //                                                 SLOT(showShortcutAccess()),
+    //                                                 Qt::ApplicationShortcut);
     this->restoreSettings();
 }
 
@@ -908,4 +914,10 @@ bool medMainWindow::event(QEvent * e)
 void medMainWindow::adjustContainersSize()
 {
     d->workspaceArea->currentWorkspace()->stackedViewContainers()->adjustContainersSize();
+}
+
+void medMainWindow::showInfo()
+{
+    medInfoDialog * dialog = new medInfoDialog();
+    dialog->exec();
 }

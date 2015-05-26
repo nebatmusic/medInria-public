@@ -132,6 +132,7 @@ medViewContainer::medViewContainer(medViewContainerSplitter *parent): QFrame(par
     d->closeContainerButton->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
     d->closeContainerButton->setToolTip(tr("Close"));
     d->closeContainerButton->setFocusPolicy(Qt::NoFocus);
+    d->closeContainerButton->setShortcut(Qt::ControlModifier + Qt::Key_W);
     d->closeContainerButton->hide();
 
     d->vSplitAction = new QAction(tr("V split"), d->toolBarMenu);

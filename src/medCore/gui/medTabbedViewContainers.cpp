@@ -56,7 +56,7 @@ medTabbedViewContainers::medTabbedViewContainers(medAbstractWorkspace* owningWor
     this->setCornerWidget(d->addTabButton);
 
     d->closeShortcut = new QShortcut(this);
-    d->closeShortcut->setKey(Qt::ControlModifier + Qt::Key_W);
+    //d->closeShortcut->setKey(Qt::ControlModifier + Qt::Key_W);
 
     connect(d->addTabButton,SIGNAL(clicked()), this, SLOT(addContainerInTab()));
     connect(this, SIGNAL(tabCloseRequested(int)), this, SLOT(disconnectTabFromSplitter(int)));
