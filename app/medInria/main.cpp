@@ -95,6 +95,8 @@ int main(int argc,char* argv[]) {
     bool show_splash = false;
     #endif
 
+    show_splash = false;
+
     medSettingsManager* mnger = medSettingsManager::instance();
 
     QStringList posargs;
