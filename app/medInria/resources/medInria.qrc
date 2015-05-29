@@ -2,7 +2,7 @@
 <qresource prefix="/">
 <file>../../../LICENSE.txt</file>
 <file>../../../RELEASE_NOTES.txt</file>
-<file>medInria.ico</file>
+<file>logo_small.ico</file>
 <file>music_logo.png</file>
 <file>music_logo_small.png</file>
 <file>icons/AxialIcon.png</file>

@@ -726,23 +726,23 @@ void medMainWindow::switchToWorkspaceArea()
     d->adjustSizeButton->setEnabled(true);
     d->stack->setCurrentWidget(d->workspaceArea);
 
-    // Dialog window to recall users if database is empty
-    // but only if the warning is enabled in medSettings
-    bool showWarning = medSettingsManager::instance()->value(
-                "system",
-                "showEmptyDbWarning",
-                QVariant(true)).toBool();
-    if ( showWarning )
-    {
-        QList<medDataIndex> indexes = medDatabaseNonPersistentController::instance()->availableItems();
-        QList<medDataIndex> patients = medDatabaseController::instance()->patients();
-        if( indexes.isEmpty() )
-            if( patients.isEmpty())
-            {
-                medEmptyDbWarning* msgBox = new medEmptyDbWarning(this);
-                msgBox->exec();
-            }
-    }
+    //// Dialog window to recall users if database is empty
+    //// but only if the warning is enabled in medSettings
+    //bool showWarning = medSettingsManager::instance()->value(
+    //            "system",
+    //            "showEmptyDbWarning",
+    //            QVariant(true)).toBool();
+    //if ( showWarning )
+    //{
+    //    QList<medDataIndex> indexes = medDatabaseNonPersistentController::instance()->availableItems();
+    //    QList<medDataIndex> patients = medDatabaseController::instance()->patients();
+    //    if( indexes.isEmpty() )
+    //        if( patients.isEmpty())
+    //        {
+    //            medEmptyDbWarning* msgBox = new medEmptyDbWarning(this);
+    //            msgBox->exec();
+    //        }
+    //}
 }
 
 void medMainWindow::showWorkspace(QString workspace)
