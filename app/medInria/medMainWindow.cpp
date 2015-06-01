@@ -878,11 +878,11 @@ void medMainWindow::closeEvent(QCloseEvent *event)
             QThreadPool::globalInstance()->waitForDone();
         }
     }
-    if(this->saveModified() != QDialog::Accepted)
-    {
-        event->ignore();
-        return;
-    }
+    //if(this->saveModified() != QDialog::Accepted)
+    //{
+    //    event->ignore();
+    //    return;
+    //}
     this->saveSettings();
     event->accept();
 }
