@@ -103,11 +103,10 @@ medViewContainer::medViewContainer(medViewContainerSplitter *parent): QFrame(par
 
     d->defaultWidget = new QWidget;
     d->defaultWidget->setObjectName("defaultWidget");
-    QLabel *defaultLabel = new QLabel(tr("Optional text"));
-    QPushButton *openButton= new QPushButton(tr("Load a scene from your system (Ctrl/Cmd+O)"));
+    QPushButton *openButton= new QPushButton(tr("Load a scene from your system"));
+    openButton->setToolTip("Select the globalMapping.xml file included in your scene folder");
     openButton->setShortcut(Qt::ControlModifier + Qt::Key_O);
     QVBoxLayout *defaultLayout = new QVBoxLayout(d->defaultWidget);
-    defaultLayout->addWidget(defaultLabel);
     defaultLayout->addWidget(openButton);
     connect(openButton, SIGNAL(clicked()), this, SLOT(loadScene()));
 
@@ -799,7 +798,7 @@ void medViewContainer::removeColorIndicator(QColor color)
 void medViewContainer::loadScene()
 {
 	//parsing the XML file describing the scene, 
-	QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),"/home",tr("XML files (*.xml)"));
+	QString fileName = QFileDialog::getOpenFileName(this, tr("Select the globalMapping.xml file included in your scene folder."),"/home",tr("XML files (*.xml)"));
 	QFile file(fileName);
     QFileInfo fileInfo(file);
     QDir workingDir=fileInfo.dir();
