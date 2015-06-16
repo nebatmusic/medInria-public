@@ -107,13 +107,17 @@ void vtkInteractorStyleTrackballCamera2::Azimuth(double angle)
 {
   vtkCamera *camera = this->CurrentRenderer->GetActiveCamera();
 
+  double axis[3];
   double newPosition[3];
   double fp[3]; camera->GetFocalPoint(fp);
   double position[3]; camera->GetPosition(position);
 
+  // We need to source the vertical axis each time, as the camera can rotate
+  camera->GetViewUp(axis);
+
   this->Transform->Identity();
   this->Transform->Translate(+fp[0],+fp[1],+fp[2]);
-  this->Transform->RotateWXYZ(angle, UpAxis);
+  this->Transform->RotateWXYZ(angle, axis);
   this->Transform->Translate(-fp[0],-fp[1],-fp[2]);
   this->Transform->TransformPoint(position, newPosition);
 
