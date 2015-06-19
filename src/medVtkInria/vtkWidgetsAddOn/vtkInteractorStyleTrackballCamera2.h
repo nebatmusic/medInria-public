@@ -45,6 +45,7 @@ class MEDVTKINRIA_EXPORT vtkInteractorStyleTrackballCamera2 : public vtkInteract
   double RightAxis[3];
   vtkTransform *Transform;
 
+
  private:
   vtkInteractorStyleTrackballCamera2(const vtkInteractorStyleTrackballCamera2&);  // Not implemented.
   void operator=(const vtkInteractorStyleTrackballCamera2&);  // Not implemented.

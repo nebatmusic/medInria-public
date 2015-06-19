@@ -225,11 +225,11 @@ void medAbstractWorkspace::updateNavigatorsToolBox()
         }
     }
     // add the navigators widgets
-    //d->navigatorToolBox->show();
+    d->navigatorToolBox->show();
     foreach(QWidget* navigator, navigators)
     {
         d->navigatorToolBox->addWidget(navigator);
-        //navigator->show();
+        navigator->show();
     }
 
     // add link parameter

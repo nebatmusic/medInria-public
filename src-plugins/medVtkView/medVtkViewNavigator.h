@@ -37,6 +37,8 @@ public:
     virtual QString description() const;
     virtual QList<medAbstractParameter*> linkableParameters();
     virtual QList<medBoolParameter*> mouseInteractionParameters();
+private:
+    void setViewPointLAND(QVector3D);
 
 
     virtual medImageView::Orientation orientation() const ;
@@ -97,6 +99,10 @@ protected slots:
     void enableSlicing(bool);
     void enablePanning(bool);
     void enableMeasuring(bool);
+
+    // massive codebloat because QT is ridiculous
+    void setViewpointSuperior();
+    void setViewpointInferior();
 
 private slots:
     void changeOrientation(medImageView::Orientation orientation);

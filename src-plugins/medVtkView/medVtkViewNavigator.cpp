@@ -55,10 +55,16 @@ class medVtkViewNavigatorPrivate
     medImageView::Orientation orientation;
 
     medBoolGroupParameter *orientationParameter;
+
+    // bunch of rubbish
     medBoolParameter *oAxialParameter;
     medBoolParameter *oSagittalParameter;
     medBoolParameter *oCoronalParameter;
     medBoolParameter *o3dParameter;
+
+
+    medBoolParameter *oSuperiorParameter;
+    medBoolParameter *oInferiorParameter;
 
     medBoolParameter *enableZooming;
     medBoolParameter *enablePanning;
@@ -104,6 +110,8 @@ medVtkViewNavigator::medVtkViewNavigator(medAbstractView *parent) :
     d->orientationParameter->setPushButtonDirection(QBoxLayout::LeftToRight);
     d->orientationParameter->getLabel()->hide();
 
+
+
     d->oAxialParameter = new medBoolParameter("axial", this);
     d->oAxialParameter->setIcon(QIcon(":/icons/AxialIcon.png"));
     d->oAxialParameter->setIconSize(QSize(40,40));
@@ -111,19 +119,19 @@ medVtkViewNavigator::medVtkViewNavigator(medAbstractView *parent) :
     connect(d->oAxialParameter, SIGNAL(valueChanged(bool)),
             this, SLOT(setAxial(bool)));
 
-    d->oCoronalParameter = new medBoolParameter("coronal", this);
-    d->oCoronalParameter->setIcon(QIcon(":/icons/CoronalIcon.png"));
-    d->oCoronalParameter->setIconSize(QSize(40,40));
-    d->oCoronalParameter->getPushButton()->setMinimumSize(64,64);
-    connect(d->oCoronalParameter, SIGNAL(valueChanged(bool)),
-            this, SLOT(setCoronal(bool)));
+//    d->oCoronalParameter = new medBoolParameter("coronal", this);
+//    d->oCoronalParameter->setIcon(QIcon(":/icons/CoronalIcon.png"));
+//    d->oCoronalParameter->setIconSize(QSize(40,40));
+//    d->oCoronalParameter->getPushButton()->setMinimumSize(64,64);
+//    connect(d->oCoronalParameter, SIGNAL(valueChanged(bool)),
+//            this, SLOT(setCoronal(bool)));
 
-    d->oSagittalParameter = new medBoolParameter("sagittal", this);
-    d->oSagittalParameter->setIcon(QIcon(":/icons/SagittalIcon.png"));
-    d->oSagittalParameter->setIconSize(QSize(40,40));
-    d->oSagittalParameter->getPushButton()->setMinimumSize(64,64);
-    connect(d->oSagittalParameter, SIGNAL(valueChanged(bool)),
-            this, SLOT(setSagittal(bool)));
+//    d->oSagittalParameter = new medBoolParameter("sagittal", this);
+//    d->oSagittalParameter->setIcon(QIcon(":/icons/SagittalIcon.png"));
+//    d->oSagittalParameter->setIconSize(QSize(40,40));
+//    d->oSagittalParameter->getPushButton()->setMinimumSize(64,64);
+//    connect(d->oSagittalParameter, SIGNAL(valueChanged(bool)),
+//            this, SLOT(setSagittal(bool)));
 
     d->o3dParameter = new medBoolParameter("3d", this);
     d->o3dParameter->setIcon(QIcon(":/icons/3DIcon.png"));
@@ -133,10 +141,38 @@ medVtkViewNavigator::medVtkViewNavigator(medAbstractView *parent) :
             this, SLOT(set3d(bool)));
 
     d->orientationParameter->addParameter(d->oAxialParameter);
-    d->orientationParameter->addParameter(d->oCoronalParameter);
-    d->orientationParameter->addParameter(d->oSagittalParameter);
+//    d->orientationParameter->addParameter(d->oCoronalParameter);
+//    d->orientationParameter->addParameter(d->oSagittalParameter);
     d->orientationParameter->addParameter(d->o3dParameter);
     d->oAxialParameter->setValue(true);
+
+    d->oSuperiorParameter = new medBoolParameter("Superior", this);
+    d->oSuperiorParameter->setIcon(QIcon(":/icons/SagittalIcon.png"));
+    d->oSuperiorParameter->setIconSize(QSize(40,40));
+    d->oSuperiorParameter->getPushButton()->setMinimumSize(64,64);
+
+    connect(d->oSuperiorParameter, SIGNAL(valueChanged(bool)), this, SLOT(setViewpointSuperior()));
+
+    d->orientationParameter->addParameter(d->oSuperiorParameter);
+
+    d->oInferiorParameter = new medBoolParameter("Inferior", this);
+    d->oInferiorParameter->setIcon(QIcon(":/icons/SagittalIcon.png"));
+    d->oInferiorParameter->setIconSize(QSize(40,40));
+    d->oInferiorParameter->getPushButton()->setMinimumSize(64,64);
+
+    connect(d->oInferiorParameter, SIGNAL(valueChanged(bool)), this, SLOT(setViewpointInferior()));
+
+    d->orientationParameter->addParameter(d->oInferiorParameter);
+    //setCamera
+
+    //d->view3d->GetCameraPosition();
+
+    //setCameraFocalPoint();
+
+    //connect(d->oSuperiorParameter, SIGNAL(valueChanged(bool)), this, SLOT(setCamera()));
+
+
+    d->view3d->GetInteractorStyle();
 
     d->showAxesParameter = new medBoolParameter("Axes", this);
     d->showRulerParameter = new medBoolParameter("Ruler", this);
@@ -712,4 +748,66 @@ void medVtkViewNavigator::restoreParameters(QHash<QString,QString> parameters)
 QString medVtkViewNavigator::name() const
 {
     return "medVtkViewNavigator";
+}
+
+
+
+void medVtkViewNavigator::setViewpointSuperior()
+{
+    QVector3D vector;
+    vector.setZ(1);
+    setViewPointLAND(vector);
+}
+
+void medVtkViewNavigator::setViewpointInferior()
+{
+    QVector3D vector;
+    vector.setZ(-1);
+    setViewPointLAND(vector);
+}
+
+void medVtkViewNavigator::setViewPointLAND(QVector3D LANDvector)
+{
+    this->zoomParameter()->blockSignals(true);
+    this->cameraParameter()->blockSignals(true);
+
+    // reset the focal point to the center of the image
+    double foc[3];
+    foc[0] = 0.0f;
+    foc[1] = 0.0f;
+    foc[2] = 0.0f;
+
+    // now set the view point, retaining the distance (zoom)
+    // We just need to determine from the 0,0,0 center, so..
+    double *pos = d->view3d->GetCameraPosition();
+
+    const double dx = pos[0] * pos[0];
+    const double dy = pos[1] * pos[1];
+    const double dz = pos[2] * pos[2];
+
+    double zoomFactor = sqrt(dx + dy + dz);
+
+    double newPos[3];
+    newPos[0] = zoomFactor * LANDvector.x();
+    newPos[1] = zoomFactor * LANDvector.y();
+    newPos[2] = zoomFactor * LANDvector.z();
+
+
+    d->view3d->GetInteractorStyle()->HandleObserversOff();
+    //
+    d->renderer3d->GetActiveCamera()->SetPosition(newPos);
+    d->renderer3d->GetActiveCamera()->SetFocalPoint(foc);
+
+
+
+    // roll is all messed up - not sure why? Let's just leave it as it is for now
+    d->renderer3d->GetActiveCamera()->SetRoll(0);
+    d->view3d->GetInteractorStyle()->HandleObserversOn();
+
+    emit orientationChanged();
+
+    this->zoomParameter()->blockSignals(false);
+    this->cameraParameter()->blockSignals(false);
+
+    d->parent->render();
 }
