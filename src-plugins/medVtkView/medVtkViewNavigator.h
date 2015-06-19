@@ -38,7 +38,7 @@ public:
     virtual QList<medAbstractParameter*> linkableParameters();
     virtual QList<medBoolParameter*> mouseInteractionParameters();
 private:
-    void setViewPointLAND(QVector3D);
+    void setViewPointAngle(int angle);
 
 
     virtual medImageView::Orientation orientation() const ;
@@ -101,8 +101,8 @@ protected slots:
     void enableMeasuring(bool);
 
     // massive codebloat because QT is ridiculous
-    void setViewpointSuperior();
-    void setViewpointInferior();
+    void setViewpointRoa();
+    void setViewpointLoa();
     void setViewpointAnterior();
     void setViewpointPosterior();
     void setViewpointRight();
