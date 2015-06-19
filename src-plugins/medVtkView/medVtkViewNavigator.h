@@ -103,6 +103,11 @@ protected slots:
     // massive codebloat because QT is ridiculous
     void setViewpointSuperior();
     void setViewpointInferior();
+    void setViewpointAnterior();
+    void setViewpointPosterior();
+    void setViewpointRight();
+    void setViewpointLeft();
+
 
 private slots:
     void changeOrientation(medImageView::Orientation orientation);
