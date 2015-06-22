@@ -66,7 +66,7 @@ vtkDataMeshNavigator::vtkDataMeshNavigator(medAbstractView* parent):
     d->depthPeelingParameter = new medBoolParameter("DepthPeeling", this);
     connect(d->depthPeelingParameter, SIGNAL(valueChanged(bool)), this, SLOT(enableDepthPeeling(bool)));
 
-    d->parameters.append(d->depthPeelingParameter);
+    //d->parameters.append(d->depthPeelingParameter);
 }
 
 vtkDataMeshNavigator::~vtkDataMeshNavigator()

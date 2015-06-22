@@ -35,6 +35,7 @@ medVisualizationWorkspace::medVisualizationWorkspace(QWidget *parent) : medAbstr
 
     medLayerParameterGroup *layerGroup1 = new medLayerParameterGroup("Layer Group 1", this, this->identifier());
     layerGroup1->setLinkAllParameters(true);
+    this->setUserViewPoolable(false); //only one view (hides view linking UI)
 }
 
 void medVisualizationWorkspace::setupViewContainerStack()

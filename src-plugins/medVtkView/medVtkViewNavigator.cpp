@@ -162,7 +162,7 @@ medVtkViewNavigator::medVtkViewNavigator(medAbstractView *parent) :
     connect(d->oRightParameter, SIGNAL(valueChanged(bool)), this, SLOT(setViewpointRight()));
 
     d->oLeftParameter = new medBoolParameter("Left", this);
-    d->oLeftParameter->setText("LL");
+    d->oLeftParameter->setText("LR");
 
     connect(d->oLeftParameter, SIGNAL(valueChanged(bool)), this, SLOT(setViewpointLeft()));
 
@@ -790,15 +790,13 @@ void medVtkViewNavigator::setViewPointAngle(int angle)
     this->cameraParameter()->blockSignals(true);
 
     double foc[3];
-    foc[0] = 0.0f;
-    foc[1] = 0.0f;
-    foc[2] = 0.0f;
+    this->cameraFocalPoint(foc);
 
     double *pos = d->view3d->GetCameraPosition();
 
-    const double dx = pos[0] * pos[0];
-    const double dy = pos[1] * pos[1];
-    const double dz = pos[2] * pos[2];
+    const double dx = (pos[0]-foc[0]) * (pos[0]-foc[0]);
+    const double dy = (pos[1]-foc[1]) * (pos[1]-foc[1]);
+    const double dz = (pos[2]-foc[2]) * (pos[2]-foc[2]);
 
     double zoomFactor = sqrt(dx + dy + dz);
 
@@ -813,9 +811,9 @@ void medVtkViewNavigator::setViewPointAngle(int angle)
 
     double radianAngle = degree2radian(angle);
 
-    newPos[0] = 0 + zoomFactor * cos(radianAngle);
-    newPos[1] = 0 + zoomFactor * sin(radianAngle);
-    newPos[2] = 0;
+    newPos[0] = foc[0] + zoomFactor * cos(radianAngle);
+    newPos[1] = foc[1] + zoomFactor * sin(radianAngle);
+    newPos[2] = foc[2];
 
     d->renderer3d->GetActiveCamera()->SetPosition(newPos);
     d->renderer3d->GetActiveCamera()->SetFocalPoint(foc);
