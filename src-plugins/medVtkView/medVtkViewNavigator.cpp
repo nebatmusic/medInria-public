@@ -162,7 +162,7 @@ medVtkViewNavigator::medVtkViewNavigator(medAbstractView *parent) :
     connect(d->oRightParameter, SIGNAL(valueChanged(bool)), this, SLOT(setViewpointRight()));
 
     d->oLeftParameter = new medBoolParameter("Left", this);
-    d->oLeftParameter->setText("LR");
+    d->oLeftParameter->setText("LL");
 
     connect(d->oLeftParameter, SIGNAL(valueChanged(bool)), this, SLOT(setViewpointLeft()));
 
