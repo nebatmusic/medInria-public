@@ -88,6 +88,7 @@ private slots:
     void updateRange();
     void showRangeWidgets(bool);
     void exportMeshWithLUT();
+    void exportToCarto();
 
 private:
     vtkDataMeshInteractorPrivate * d;

@@ -90,6 +90,7 @@ public:
 
     QPushButton * range_button;
     QPushButton * export_button;
+    QPushButton * carto_button;
     
     QList <medAbstractParameter*> parameters;
 
@@ -124,6 +125,9 @@ vtkDataMeshInteractor::vtkDataMeshInteractor(medAbstractView *parent):
 
     d->export_button = new QPushButton("Export with LUT");
     connect(d->export_button,SIGNAL(clicked()),this,SLOT(exportMeshWithLUT()));
+
+    d->carto_button = new QPushButton("Export to Carto");
+    connect(d->carto_button,SIGNAL(clicked()),this,SLOT(exportToCarto()));
 }
 
 
@@ -588,6 +592,7 @@ QWidget* vtkDataMeshInteractor::buildToolBoxWidget()
     layout->addRow(d->minRange->getLabel(),minRangeLayout);
     layout->addRow(d->maxRange->getLabel(),maxRangeLayout);
     layout->addRow(d->export_button);
+    layout->addRow(d->carto_button);
     showRangeWidgets(false);
     return toolbox;
 }
@@ -710,6 +715,21 @@ void vtkDataMeshInteractor::exportMeshWithLUT()
         d->metaDataSet->GetCurrentScalarArray()->SetLookupTable(lut);
 
     medDataManager::instance()->exportData(dataToExport);
+}
+
+void vtkDataMeshInteractor::exportToCarto()
+{
+    QString dir = QFileDialog::getExistingDirectory(0, tr("Select a directory"));
+    if(dir == "")
+    {
+        return;
+    }
+    QString filename =  dir +
+                        "/bloup.vtk"; //this part is to go through the canwrite() method in medDatabaseExporter
+                                        // i.e nust end with .vtk
+    medAbstractData *data = d->view->layerData(0);
+
+    medDataManager::instance()->exportDataToPath(data, filename, "cartoVtkWriter");
 }
 
 void vtkDataMeshInteractor::restoreParameters(QHash<QString, QString> parameters)
