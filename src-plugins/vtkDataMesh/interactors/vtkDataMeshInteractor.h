@@ -83,15 +83,21 @@ protected:
 private:
     static QStringList dataHandled();
 
+signals:
+    void needMoreParameters();
+
 private slots:
     void updateSlicingParam();
     void updateRange();
     void showRangeWidgets(bool);
     void exportMeshWithLUT();
     void exportToCarto();
+    void showPatientInfoDialog();
+    void stopWaiting();
 
 private:
     vtkDataMeshInteractorPrivate * d;
+    QString patientLastName, patientFirstName, patientID;
 };
 
 

@@ -57,7 +57,6 @@ void medDatabaseExporter::internalRun(void)
         emit showError("File name is empty", 3000);
         return;
     }
-
     dtkAbstractDataWriter * dataWriter = medAbstractDataFactory::instance()->writer(d->writer);
     dataWriter->setData(d->data);
 

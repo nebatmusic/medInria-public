@@ -12,6 +12,7 @@
 =========================================================================*/
 
 #include <vtkDataMeshInteractor.h>
+#include "cartoPatientInfoDialog.h"
 
 #include <QVTKWidget.h>
 
@@ -43,6 +44,7 @@
 #include <dtkLog/dtkLog.h>
 
 #include <medAbstractData.h>
+#include <medMetaDataKeys.h>
 #include <medAbstractParameter.h>
 #include <medBoolParameter.h>
 #include <medDoubleParameter.h>
@@ -52,6 +54,7 @@
 #include <medViewFactory.h>
 #include <medAbstractImageView.h>
 #include <medIntParameter.h>
+#include <medTabbedViewContainers.h>
 #include <medVtkViewBackend.h>
 #include <vtkMetaSurfaceMesh.h>
 #include <vtkScalarBarActor.h>
@@ -91,15 +94,17 @@ public:
     QPushButton * range_button;
     QPushButton * export_button;
     QPushButton * carto_button;
-    
+
     QList <medAbstractParameter*> parameters;
 
     medIntParameter *slicingParameter;
+
+    bool exporting;
 };
 
 
 vtkDataMeshInteractor::vtkDataMeshInteractor(medAbstractView *parent):
-    medAbstractImageViewInteractor(parent), d(new vtkDataMeshInteractorPrivate)
+medAbstractImageViewInteractor(parent), d(new vtkDataMeshInteractorPrivate)
 {
     d->view = dynamic_cast<medAbstractImageView*>(parent);
 
@@ -123,7 +128,7 @@ vtkDataMeshInteractor::vtkDataMeshInteractor(medAbstractView *parent):
     d->range_button->setCheckable(true);
     connect(d->range_button,SIGNAL(toggled(bool)),this,SLOT(showRangeWidgets(bool)));
 
-    d->export_button = new QPushButton("Export with LUT");
+    d->export_button = new QPushButton("Export to NavX");
     connect(d->export_button,SIGNAL(clicked()),this,SLOT(exportMeshWithLUT()));
 
     d->carto_button = new QPushButton("Export to Carto");
@@ -164,9 +169,9 @@ QStringList vtkDataMeshInteractor::dataHandled()
 bool vtkDataMeshInteractor::registered()
 {
     medViewFactory *factory = medViewFactory::instance();
-    return factory->registerInteractor<vtkDataMeshInteractor>("vtkDataMeshInteractor",
-                                                                  QStringList () << "medVtkView" <<
-                                                                  vtkDataMeshInteractor::dataHandled());
+    return factory->registerInteractor<vtkDataMeshInteractor>(  "vtkDataMeshInteractor",
+                                                                QStringList () << "medVtkView" <<
+                                                                vtkDataMeshInteractor::dataHandled());
 }
 
 
@@ -189,7 +194,7 @@ void vtkDataMeshInteractor::setupParameters()
     d->parameters << this->opacityParameter();
 
     if(!(d->metaDataSet->GetType() != vtkMetaDataSet::VTK_META_SURFACE_MESH &&
-         d->metaDataSet->GetType() != vtkMetaDataSet::VTK_META_VOLUME_MESH))
+        d->metaDataSet->GetType() != vtkMetaDataSet::VTK_META_VOLUME_MESH))
     {
         d->LUTParam = new medStringListParameter("LUT", this);
         d->LUTParam->addItem("Default");
@@ -412,7 +417,7 @@ void vtkDataMeshInteractor::setAttribute(const QString & attributeName)
         d->maxRange->setValue(range[1]);
         d->view2d->SetColorRange(range);
         d->view3d->SetColorRange(range);
-        
+
         this->setLut(d->lut.first);
 
         mapper2d->SetScalarVisibility(1);
@@ -450,7 +455,7 @@ void vtkDataMeshInteractor::setLut(const QString & lutName)
         lut = vtkLookupTableManager::GetLookupTable(lutName.toStdString());
 
     if ( ! d->attribute)
-     return;
+        return;
 
     d->lut = LutPair(lut, lutName);
     this->setLut(lut);
@@ -522,12 +527,12 @@ void vtkDataMeshInteractor::setLut(vtkLookupTable * lut)
     mapper2d->SetLookupTable(lut);
     mapper2d->UseLookupTableScalarRangeOn();
     mapper2d->InterpolateScalarsBeforeMappingOn();
-    
+
     d->view3d->SetLookupTable(lut,d->view->layer(this->inputData()));
     mapper3d->SetLookupTable(lut);
     mapper3d->UseLookupTableScalarRangeOn();
     mapper3d->InterpolateScalarsBeforeMappingOn();
-    
+
     updateRange();
 }
 
@@ -622,12 +627,12 @@ void vtkDataMeshInteractor::setUpViewForThumbnail()
     d->view3d->ShowAnnotationsOff();
 
     //TODO find how to remove the litlle cube at the bottom left corner.
-//    d->view3d->ShowActorXOff();
-//    d->view3d->ShowActorYOff();
-//    d->view3d->ShowActorYOff();
-//    d->view3d->ShowBoxWidgetOff();
-//    d->view3d->ShowPlaneWidgetOff();
-//    d->view3d->ShowScalarBarOff();
+    //    d->view3d->ShowActorXOff();
+    //    d->view3d->ShowActorYOff();
+    //    d->view3d->ShowActorYOff();
+    //    d->view3d->ShowBoxWidgetOff();
+    //    d->view3d->ShowPlaneWidgetOff();
+    //    d->view3d->ShowScalarBarOff();
 
 }
 
@@ -664,12 +669,12 @@ void vtkDataMeshInteractor::updateRange()
 {
     if (!d->metaDataSet)
         return;
-    
+
     vtkMapper * mapper2d = d->actor2d->GetMapper();
     vtkMapper * mapper3d = d->actor3d->GetMapper();
 
     vtkLookupTable * lut = vtkLookupTable::SafeDownCast(mapper3d->GetLookupTable());
-    
+
     if (!lut)
         return;
 
@@ -709,27 +714,100 @@ void vtkDataMeshInteractor::exportMeshWithLUT()
     vtkMapper * mapper2d = actor2d->GetMapper();
     vtkMapper * mapper3d = actor3d->GetMapper();
     vtkLookupTable * lut = static_cast<vtkLookupTable*>(mapper3d->GetLookupTable());
-//    if (!lut)
-//        vtkLookupTable * lut = static_cast<vtkLookupTable*>(mapper2d->GetLookupTable());
+    //    if (!lut)
+    //        vtkLookupTable * lut = static_cast<vtkLookupTable*>(mapper2d->GetLookupTable());
     if (lut && d->metaDataSet->GetCurrentScalarArray())
         d->metaDataSet->GetCurrentScalarArray()->SetLookupTable(lut);
 
-    medDataManager::instance()->exportData(dataToExport);
+    QString fileName = QFileDialog::getSaveFileName(0, tr("Save Navx file"), QDir::home().absolutePath() + "/navX.xml");
+
+    medDataManager::instance()->exportDataToPath(dataToExport, fileName, "navxDifWriter");
 }
 
 void vtkDataMeshInteractor::exportToCarto()
 {
-    QString dir = QFileDialog::getExistingDirectory(0, tr("Select a directory"));
+    QString dir = QFileDialog::getExistingDirectory(0, tr("Select a directory to save your CARTO files"));
     if(dir == "")
     {
         return;
     }
-    QString filename =  dir +
-                        "/bloup.vtk"; //this part is to go through the canwrite() method in medDatabaseExporter
-                                        // i.e nust end with .vtk
-    medAbstractData *data = d->view->layerData(0);
 
-    medDataManager::instance()->exportDataToPath(data, filename, "cartoVtkWriter");
+    //Get info for all files
+    this->moveToThread(qApp->thread());
+    connect(this, SIGNAL(needMoreParameters()), 
+        this, SLOT(showPatientInfoDialog()), Qt::UniqueConnection);
+    emit needMoreParameters();
+
+    medAbstractLayeredView* layeredView=dynamic_cast<medAbstractLayeredView*>(d->view);
+    for (unsigned int i=0 ; i<layeredView->layersCount();++i)
+    {
+        medAbstractData *data = d->view->layerData(i);
+        QString seriesName = data->metaDataValues(medMetaDataKeys::SeriesDescription.key())[0];
+        QString filename =  dir + "/" + seriesName + ".vtk";
+
+        vtkMetaDataSet * mesh = dynamic_cast<vtkMetaDataSet*>((vtkDataObject *)(data->data()));
+
+        dtkSmartPointer<vtkDataMesh> dataToExport = new vtkDataMesh;
+        dataToExport->setData(mesh);
+        dataToExport->addMetaData(medMetaDataKeys::PatientName.key(), patientFirstName+" "+patientLastName);
+        dataToExport->addMetaData ( medMetaDataKeys::PatientID.key(), QStringList() << patientID );
+
+
+        vtkImageView2D * view2d = static_cast<medVtkViewBackend*>(d->view->backend())->view2D;
+        vtkImageView3D * view3d = static_cast<medVtkViewBackend*>(d->view->backend())->view3D;
+
+        vtkActor * actor2d = static_cast<vtkActor*>(view2d->FindDataSetActor(mesh->GetDataSet()));
+        vtkActor * actor3d = static_cast<vtkActor*>(view3d->FindDataSetActor(mesh->GetDataSet()));
+        vtkMapper * mapper2d = actor2d->GetMapper();
+        vtkMapper * mapper3d = actor3d->GetMapper();
+        vtkLookupTable * lut = static_cast<vtkLookupTable*>(mapper3d->GetLookupTable());
+        //    if (!lut)
+        //        vtkLookupTable * lut = static_cast<vtkLookupTable*>(mapper2d->GetLookupTable());
+        if (lut && mesh->GetCurrentScalarArray())
+            d->metaDataSet->GetCurrentScalarArray()->SetLookupTable(lut);
+        medDataManager::instance()->exportDataToPath(dataToExport, filename, "cartoVtkWriter");
+
+        //To leave the loop after export (otherwise, dataToExport deleted)
+        connect(medDataManager::instance(), SIGNAL(dataExported()), this, SLOT(stopWaiting()));
+        d->exporting = true;
+        while (d->exporting)
+            QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+    }
+}
+
+void vtkDataMeshInteractor::stopWaiting()
+{
+    d->exporting = false;
+}
+
+void vtkDataMeshInteractor::showPatientInfoDialog()
+{
+    QList<QString> ptAttributes, ptValues;
+
+    patientFirstName = "John";
+    patientLastName = "Doe";
+    patientID = "4815162342";
+
+    ptAttributes << "First name";
+    ptAttributes << "Last name";
+    ptAttributes << "Patient ID";
+
+    ptValues << patientFirstName;
+    ptValues << patientLastName;
+    ptValues << patientID;
+
+    cartoPatientInfoDialog editDialog(ptAttributes, ptValues, NULL);
+
+    int res =  editDialog.exec();
+
+    if(res == QDialog::Accepted)
+    {
+        patientFirstName = editDialog.value("First name");
+        patientLastName = editDialog.value("Last name");
+        patientID = editDialog.value("Patient ID");
+    }
+
+    //TODO : if QDialog::Rejected ...
 }
 
 void vtkDataMeshInteractor::restoreParameters(QHash<QString, QString> parameters)
