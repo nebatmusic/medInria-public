@@ -360,6 +360,15 @@ QString vtkDataMeshInteractor::renderingType() const
     return QString::fromStdString(d->actorProperty->GetRepresentationAsString()).toLower();
 }
 
+void vtkDataMeshInteractor::setMaxRange(double max)
+{
+    d->maxRange->setValue(max);
+}
+
+void vtkDataMeshInteractor::setMinRange(double min)
+{
+    d->minRange->setValue(min);
+}
 
 void vtkDataMeshInteractor::setAttribute(const QString & attributeName)
 {
@@ -826,6 +835,10 @@ void vtkDataMeshInteractor::restoreParameters(QHash<QString, QString> parameters
         setRenderingType(parameters["Rendering"]);
     if(parameters.contains("Color"))
         setColor(parameters["Color"]);
+    if(parameters.contains("Max"))
+        setMaxRange(medDoubleParameter::fromString(parameters["Max"]));
+    if(parameters.contains("Min"))
+        setMinRange(medDoubleParameter::fromString(parameters["Min"]));
 }
 
 QString vtkDataMeshInteractor::name() const
