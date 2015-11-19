@@ -418,7 +418,7 @@ void vtkDataMeshInteractor::setAttribute(const QString & attributeName)
         mapper2d->SelectColorArray(qPrintable(attributeName));
         mapper3d->SelectColorArray(qPrintable(attributeName));
 
-        d->range_button->show();
+        //d->range_button->show();
         double * range = d->metaDataSet->GetCurrentScalarRange();
         d->minRange->setRange(range[0],range[1]);
         d->maxRange->setRange(range[0],range[1]);
@@ -590,11 +590,11 @@ QWidget* vtkDataMeshInteractor::buildToolBoxWidget()
     //if(d->attributesParam) 
     //    layout->addRow(d->attributesParam->getLabel(), d->attributesParam->getComboBox());
 
-    layout->addRow(d->LUTParam->getLabel(), d->LUTParam->getComboBox());
-    layout->addRow(d->edgeVisibleParam->getLabel(), d->edgeVisibleParam->getCheckBox());
-    layout->addRow(d->colorParam->getLabel(), d->colorParam->getComboBox());
-    layout->addRow(d->renderingParam->getLabel(), d->renderingParam->getComboBox());
-    layout->addRow(d->range_button);
+    //layout->addRow(d->LUTParam->getLabel(), d->LUTParam->getComboBox());
+    //layout->addRow(d->edgeVisibleParam->getLabel(), d->edgeVisibleParam->getCheckBox());
+    //layout->addRow(d->colorParam->getLabel(), d->colorParam->getComboBox());
+    //layout->addRow(d->renderingParam->getLabel(), d->renderingParam->getComboBox());
+    //layout->addRow(d->range_button);
     d->minRange->getSlider()->setOrientation(Qt::Horizontal);
     d->maxRange->getSlider()->setOrientation(Qt::Horizontal);
     QHBoxLayout *minRangeLayout = new QHBoxLayout(toolbox);

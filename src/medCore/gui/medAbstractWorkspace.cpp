@@ -464,14 +464,15 @@ void medAbstractWorkspace::updateInteractorsToolBox()
     medAbstractLayeredView *view = dynamic_cast<medAbstractLayeredView*>(container->view());
 
     // add link parameter
-    if(view &&  d->userLayerPoolable)
+/*
+     if(view &&  d->userLayerPoolable)
     {
         QWidget *linkMenu = buildLayerLinkMenu(d->layerListWidget->selectedItems());
         d->interactorToolBox->addWidget(linkMenu);
 
         d->interactorToolBox->show();
     }
-
+*/
     // If we have a multiSelection we just want to colorise the container that have at least one layer selected.
     if(d->layerListWidget->selectedItems().size() > 1)
     {
