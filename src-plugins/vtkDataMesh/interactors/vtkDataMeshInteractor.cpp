@@ -129,7 +129,7 @@ medAbstractImageViewInteractor(parent), d(new vtkDataMeshInteractorPrivate)
     connect(d->range_button,SIGNAL(toggled(bool)),this,SLOT(showRangeWidgets(bool)));
 
     d->export_button = new QPushButton("Export to NavX");
-    connect(d->export_button,SIGNAL(clicked()),this,SLOT(exportMeshWithLUT()));
+    connect(d->export_button,SIGNAL(clicked()),this,SLOT(exportToNavX()));
 
     d->carto_button = new QPushButton("Export to Carto");
     connect(d->carto_button,SIGNAL(clicked()),this,SLOT(exportToCarto()));
@@ -710,7 +710,7 @@ void vtkDataMeshInteractor::showRangeWidgets(bool checked)
     }
 }
 
-void vtkDataMeshInteractor::exportMeshWithLUT()
+void vtkDataMeshInteractor::exportToNavX()
 {
     dtkSmartPointer<vtkDataMesh> dataToExport = new vtkDataMesh;
     dataToExport->setData(d->metaDataSet);
@@ -729,6 +729,10 @@ void vtkDataMeshInteractor::exportMeshWithLUT()
         d->metaDataSet->GetCurrentScalarArray()->SetLookupTable(lut);
 
     QString fileName = QFileDialog::getSaveFileName(0, tr("Save Navx file"), QDir::home().absolutePath() + "/navX.xml");
+    if(fileName == "")
+    {
+        return;
+    }
 
     medDataManager::instance()->exportDataToPath(dataToExport, fileName, "navxDifWriter");
 }

@@ -92,7 +92,7 @@ private slots:
     void updateSlicingParam();
     void updateRange();
     void showRangeWidgets(bool);
-    void exportMeshWithLUT();
+    void exportToNavX();
     void exportToCarto();
     void showPatientInfoDialog();
     void stopWaiting();
