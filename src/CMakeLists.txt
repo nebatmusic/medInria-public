@@ -33,7 +33,7 @@ add_subdirectory(medPacs)
 
 add_subdirectory(medLog)
 add_subdirectory(medImageIO)
-add_subdirectory(medRegistration)
+#add_subdirectory(medRegistration)
 
 add_subdirectory(medVtkInria)
 

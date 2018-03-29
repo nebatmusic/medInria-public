@@ -18,11 +18,7 @@
 #include <string>
 #include <vector>
 
-#if defined __APPLE__
-#include <ext/hash_map>
-#else
-#include <hash_map>
-#endif
+#include <unordered_map>
 
 #ifdef WIN32
     #ifndef NAN

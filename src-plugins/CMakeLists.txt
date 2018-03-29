@@ -52,14 +52,8 @@ set(PLUGIN_LIST
   medVtkFibersData                          ON
   itkDataImage                              ON
   vtkDataMesh                               ON
-  itkDataDiffusionGradientList              ON
   itkDataTensorImage                        ON
-  medSegmentation                           ON
-  itkFilters                                ON
-  qtdcmDataSource                           ON
   itkDataSHImage                            ON
-  undoRedoRegistration                      ON
-  itkProcessRegistrationDiffeomorphicDemons ON
   medVtkView                                ON
   )   
 

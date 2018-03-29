@@ -195,6 +195,7 @@ target_link_libraries(${PROJECT_NAME}
   ITKIOGDCM
   ITKIOGIPL
   ITKIOGE
+  ITKIOImageBase
   ITKIOJPEG
   ITKIOLSM
   ITKIOMeta
@@ -202,6 +203,7 @@ target_link_libraries(${PROJECT_NAME}
   ITKIONRRD
   ITKIOPNG
   ITKIOStimulate
+  ITKIOTIFF
   ITKIOVTK
   ITKIOMRC
   )

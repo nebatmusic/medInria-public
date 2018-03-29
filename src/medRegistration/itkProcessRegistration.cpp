@@ -44,6 +44,7 @@
 #include <itkCommand.h>
 
 #include <time.h>
+#include <algorithm>
 
 // /////////////////////////////////////////////////////////////////
 // itkProcessRegistrationPrivate

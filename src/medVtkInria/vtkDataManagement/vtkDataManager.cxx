@@ -31,6 +31,7 @@
 #include <algorithm>
 #include <sstream>
 #include <time.h>
+#include <algorithm>
 
 //----------------------------------------------------------------------------
 vtkStandardNewMacro( vtkDataManager );
