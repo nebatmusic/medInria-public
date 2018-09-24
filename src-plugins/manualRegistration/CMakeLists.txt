@@ -84,7 +84,8 @@ target_link_libraries(${PROJECT_NAME}
   ${ITK_LIBRARIES}
   ${VTK_LIBRARIES}
   ${RPI_LIBRARIES}
-  ${DTK_LIBRARIES}
+  dtkLog
+  dtkCore
   medCore
   medRegistration
   medUtilities

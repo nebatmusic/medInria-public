@@ -87,14 +87,32 @@ add_library(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_CFILES})
 
 target_link_libraries(${PROJECT_NAME}
   ${QT_LIBRARIES}
-  ${DTK_LIBRARIES}
-  ${VTK_LIBRARIES}
-  ${ITK_LIBRARIES}
+  dtkCore
+  dtkLog
+  ITKIOBioRad
+  ITKIOBMP
+  ITKIOGDCM
+  ITKIOGIPL
+  ITKIOHDF5
+  ITKIOJPEG
+  ITKIOLSM
+  ITKIOMeta
+  ITKIONIFTI
+  ITKIONRRD
+  ITKIOPhilipsREC
+  ITKIOPNG
+  ITKIOStimulate
+  ITKIOVTK
+  ITKStatistics
+  ${ITKReview_LIBRARIES} #TODO Get rid of this ASAP
   medCore
   medImageIO
   medLog
   medVtkInria
   QVTK
+  vtkCommon
+  vtkRendering
+  vtkVolumeRendering
   )
 
 # needed because of link  with medImageIO

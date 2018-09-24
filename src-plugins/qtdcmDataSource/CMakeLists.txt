@@ -85,7 +85,8 @@ target_link_libraries(${PROJECT_NAME}
   ${QTDCM_LIBS}
   ${DCMTK_LIBRARIES}
   ${WIN_LINK_LIBRARIES}
-  ${DTK_LIBRARIES}
+  dtkCore
+  dtkLog
   medCore
   )
   
