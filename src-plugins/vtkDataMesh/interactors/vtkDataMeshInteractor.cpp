@@ -117,6 +117,24 @@ vtkDataMeshInteractor::vtkDataMeshInteractor(medAbstractView *parent):
     d->range_button = new QPushButton("Modify Range");
     d->range_button->setCheckable(true);
     connect(d->range_button,SIGNAL(toggled(bool)),this,SLOT(showRangeWidgets(bool)));
+
+
+    // tmp neb
+    d->slicingParameter = new medIntParameter("Slicing", this);
+    connect(d->slicingParameter, SIGNAL(valueChanged(int)), this, SLOT(moveToSlice(int)));
+
+    if(!d->view->is2D())
+    {
+        d->slicingParameter->getSlider()->setEnabled(false);
+        d->slicingParameter->hide();
+    }
+    else
+    {
+        d->slicingParameter->show();
+        d->slicingParameter->getSlider()->setEnabled(true);
+        this->updateSlicingParam();
+    }
+
 }
 
 
@@ -154,8 +172,8 @@ bool vtkDataMeshInteractor::registered()
 {
     medViewFactory *factory = medViewFactory::instance();
     return factory->registerInteractor<vtkDataMeshInteractor>("vtkDataMeshInteractor",
-                                                                  QStringList () << "medVtkView" <<
-                                                                  vtkDataMeshInteractor::dataHandled());
+                                                              QStringList () << "medVtkView" <<
+                                                              vtkDataMeshInteractor::dataHandled());
 }
 
 
@@ -281,8 +299,6 @@ void vtkDataMeshInteractor::setupParameters()
     d->renderingParam->setValue("Surface");
     d->parameters << d->renderingParam;
 
-    d->slicingParameter = new medIntParameter("Slicing", this);
-    connect(d->slicingParameter, SIGNAL(valueChanged(int)), this, SLOT(moveToSlice(int)));
     connect(d->view->positionBeingViewedParameter(), SIGNAL(valueChanged(QVector3D)), this, SLOT(updateSlicingParam()));
 
     d->parameters << this->visibilityParameter();
@@ -484,7 +500,7 @@ void vtkDataMeshInteractor::setLut(const QString & lutName)
         lut = vtkLookupTableManager::GetLookupTable(lutName.toStdString());
 
     if ( ! d->attribute)
-     return;
+        return;
 
     d->lut = LutPair(lut, lutName);
     this->setLut(lut);
@@ -658,12 +674,12 @@ void vtkDataMeshInteractor::setUpViewForThumbnail()
     d->view3d->ShowAnnotationsOff();
 
     //TODO find how to remove the litlle cube at the bottom left corner.
-//    d->view3d->ShowActorXOff();
-//    d->view3d->ShowActorYOff();
-//    d->view3d->ShowActorYOff();
-//    d->view3d->ShowBoxWidgetOff();
-//    d->view3d->ShowPlaneWidgetOff();
-//    d->view3d->ShowScalarBarOff();
+    //    d->view3d->ShowActorXOff();
+    //    d->view3d->ShowActorYOff();
+    //    d->view3d->ShowActorYOff();
+    //    d->view3d->ShowBoxWidgetOff();
+    //    d->view3d->ShowPlaneWidgetOff();
+    //    d->view3d->ShowScalarBarOff();
 
 }
 
@@ -677,7 +693,6 @@ void vtkDataMeshInteractor::updateWidgets()
     else
     {
         d->slicingParameter->show();
-        d->slicingParameter->getSlider()->setEnabled(true);
         this->updateSlicingParam();
     }
 }
