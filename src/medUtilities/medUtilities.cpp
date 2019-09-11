@@ -173,7 +173,8 @@ void medUtilities::switchTo3D(medAbstractView *view, Mode3DType mode3D)
                 break;
             }
         }
-        if(mode3DParam) {
+        if(mode3DParam) 
+	{
             switch(mode3D)
             {
             case VR:
@@ -190,8 +191,10 @@ void medUtilities::switchTo3D(medAbstractView *view, Mode3DType mode3D)
                 break;
             }
         }
-        if(renderer3DParam)
+        if(renderer3DParam) 
+	{
             renderer3DParam->setValue("Ray Cast");
+	}
     }
 }
 
