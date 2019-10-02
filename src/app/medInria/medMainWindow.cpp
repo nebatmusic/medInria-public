@@ -2,7 +2,7 @@
 
  medInria
 
- Copyright (c) INRIA 2013 - 2018. All rights reserved.
+ Copyright (c) INRIA 2013 - 2019. All rights reserved.
  See LICENSE.txt for details.
 
   This software is distributed WITHOUT ANY WARRANTY; without even
@@ -11,60 +11,40 @@
 
 =========================================================================*/
 
+#include <dtkComposerWidget.h>
+
+#include <medBrowserArea.h>
+#include <medComposerArea.h>
+#include <medDatabaseController.h>
+#include <medDatabaseNonPersistentController.h>
+#include <medDataManager.h>
+#include <medEmptyDbWarning.h>
+#include <medHomepageArea.h>
+#include <medJobManagerL.h>
+#include <medLogger.h>
 #include <medMainWindow.h>
+#include <medQuickAccessMenu.h>
+#include <medSaveModifiedDialog.h>
+#include <medSelectorToolBox.h>
+#include <medSelectorWorkspace.h>
+#include <medSettingsEditor.h>
+#include <medSettingsManager.h>
+#include <medStatusBar.h>
+#include <medTabbedViewContainers.h>
+#include <medToolBoxFactory.h>
+#include <medVisualizationWorkspace.h>
+#include <medWorkspaceArea.h>
+#include <medWorkspaceFactory.h>
+#include <mscSearchToolboxDialog.h>
 
 #include <QtGui>
 #include <QtWidgets>
-
-#include <medBrowserArea.h>
-#include <medWorkspaceArea.h>
-#include <medHomepageArea.h>
-#include <medComposerArea.h>
-
-#include <medTabbedViewContainers.h>
-
-#include <medSettingsManager.h>
-#include <medSettingsEditor.h>
-
-#include <medStatusBar.h>
-#include <medQuickAccessMenu.h>
-#include <medSaveModifiedDialog.h>
-#include <medEmptyDbWarning.h>
-
-#include <medDatabaseNonPersistentController.h>
-#include <medDatabaseController.h>
-
-#include <medJobManagerL.h>
-
-#include <medWorkspaceFactory.h>
-#include <medVisualizationWorkspace.h>
-
-#include <dtkComposerWidget.h>
 
 #ifdef Q_OS_MAC
 # define CONTROL_KEY "Meta"
 #else
 # define CONTROL_KEY "Ctrl"
 #endif
-
-//--------------------------------------------------------------------------
-// medMainWindowStyle
-
-/*class medMainWindowStyle : public QStyle
-{
-public:
-    void drawPrimitive ( PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget = 0 ) const
-    {
-        switch ( element )
-        {
-        case PE_FrameFocusRect:
-            break;
-        default:
-            QStyle::drawPrimitive ( element, option, painter, widget );
-            break;
-        }
-    }
-};*/
 
 //--------------------------------------------------------------------------
 // medMainWindow
@@ -163,6 +143,7 @@ medMainWindow::medMainWindow ( QWidget *parent ) : QMainWindow ( parent ), d ( n
     d->quickAccessWidget->move(QPoint(0, this->height() - d->quickAccessWidget->height() - 30));
 
     connect(d->quickAccessWidget, SIGNAL(menuHidden()), this, SLOT(hideQuickAccess()));
+    connect(d->quickAccessWidget, SIGNAL(searchSelected()), this, SLOT(switchToSearchArea()));
     connect(d->quickAccessWidget, SIGNAL(homepageSelected()), this, SLOT(switchToHomepageArea()));
     connect(d->quickAccessWidget, SIGNAL(browserSelected()), this, SLOT(switchToBrowserArea()));
     connect(d->quickAccessWidget, SIGNAL(composerSelected()), this, SLOT(switchToComposerArea()));
@@ -296,7 +277,7 @@ medMainWindow::medMainWindow ( QWidget *parent ) : QMainWindow ( parent ), d ( n
 medMainWindow::~medMainWindow()
 {
     delete d;
-    d = NULL;
+    d = nullptr;
 }
 
 void medMainWindow::mousePressEvent ( QMouseEvent* event )
@@ -381,22 +362,32 @@ void medMainWindow::open(const QString & path)
 {
     QEventLoop loop;
     QUuid uuid = medDataManager::instance()->importPath(path, false);
-    d->expectedUuids.append(uuid);
-    connect(medDataManager::instance(), SIGNAL(dataImported(medDataIndex,QUuid)),
-            this, SLOT(open_waitForImportedSignal(medDataIndex,QUuid)));
-    while( d->expectedUuids.contains(uuid)) {
-        loop.processEvents(QEventLoop::ExcludeUserInputEvents);
+    if (!uuid.isNull())
+    {
+        d->expectedUuids.append(uuid);
+        connect(medDataManager::instance(), SIGNAL(dataImported(medDataIndex,QUuid)), this, SLOT(open_waitForImportedSignal(medDataIndex,QUuid)));
+        while( d->expectedUuids.contains(uuid))
+        {
+            loop.processEvents(QEventLoop::ExcludeUserInputEvents);
+        }
+    }
+    else
+    {
+        QMessageBox msgBox;
+        msgBox.setText(path + " is not valid");
+        msgBox.exec();
     }
 }
 
 
 void medMainWindow::open_waitForImportedSignal(medDataIndex index, QUuid uuid)
 {
-    if(d->expectedUuids.contains(uuid)) {
+    if(d->expectedUuids.contains(uuid))
+    {
         d->expectedUuids.removeAll(uuid);
-        disconnect(medDataManager::instance(),SIGNAL(dataImported(medDataIndex,QUuid)),
-                   this,SLOT(open_waitForImportedSignal(medDataIndex,QUuid)));
-        if (index.isValid()) {
+        disconnect(medDataManager::instance(),SIGNAL(dataImported(medDataIndex,QUuid)), this,SLOT(open_waitForImportedSignal(medDataIndex,QUuid)));
+        if (index.isValid())
+        {
             this->showWorkspace(medVisualizationWorkspace::staticIdentifier());
             d->workspaceArea->currentWorkspace()->open(index);
         }
@@ -443,21 +434,24 @@ void medMainWindow::toggleFullScreen()
 void medMainWindow::captureScreenshot()
 {
     QPixmap screenshot = d->workspaceArea->grabScreenshot();
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Save screenshot as"),
-                                                    QDir::home().absolutePath(),
-                                                    QString(), 0, QFileDialog::HideNameFilterDetails);
 
-    QByteArray format = fileName.right(fileName.lastIndexOf('.')).toUpper().toLatin1();
-    if ( ! QImageWriter::supportedImageFormats().contains(format) )
-        format = "PNG";
+    if (!screenshot.isNull())
+    {
+        QString fileName = QFileDialog::getSaveFileName(this,
+                                                        tr("Save screenshot as"),
+                                                        QString(QDir::home().absolutePath() + "/screen.png"),
+                                                        "Image files (*.png *.jpeg *.jpg);;All files (*.*)",
+                                                        0);
 
-    QImage transparentImage = screenshot.toImage();
-    QImage outImage(transparentImage.size(), QImage::Format_RGB32);
-    outImage.fill(QColor(Qt::black).rgb());
+        QByteArray format = fileName.right(fileName.lastIndexOf('.')).toUpper().toLatin1();
+        if ( ! QImageWriter::supportedImageFormats().contains(format) )
+        {
+            format = "PNG";
+        }
 
-    QPainter painter(&outImage);
-    painter.drawImage(0,0,transparentImage);
-    outImage.save(fileName, format.constData());
+        QImage image = screenshot.toImage();
+        image.save(fileName, format.constData());
+    }
 }
 
 void medMainWindow::showFullScreen()
@@ -512,9 +506,6 @@ void medMainWindow::switchToHomepageArea()
 
     d->screenshotButton->setEnabled(false);
     d->adjustSizeButton->setEnabled(false);
-
-    if (d->homepageArea->getAnimation())
-        d->homepageArea->getAnimation()->start();
 }
 
 void medMainWindow::switchToBrowserArea()
@@ -538,6 +529,57 @@ void medMainWindow::switchToBrowserArea()
     d->screenshotButton->setEnabled(false);
     d->adjustSizeButton->setEnabled(false);
     d->stack->setCurrentWidget(d->browserArea);
+}
+
+void medMainWindow::switchToSearchArea()
+{
+    // Create toolbox list
+    QHash<QString, QStringList> toolboxDataHash;
+    medToolBoxFactory *tbFactory = medToolBoxFactory::instance();
+    QList<medWorkspaceFactory::Details*> workspaceDetails = medWorkspaceFactory::instance()->workspaceDetailsSortedByName();
+    foreach ( medWorkspaceFactory::Details *detail, workspaceDetails )
+    {
+        QString workspaceName = detail->name;
+
+        foreach(QString toolboxName, tbFactory->toolBoxesFromCategory(workspaceName))
+        {
+            medToolBoxDetails *toolboxDetails = tbFactory->toolBoxDetailsFromId(toolboxName);
+
+            QStringList current;
+            // Displayed toolbox name from MED_TOOLBOX_INTERFACE
+            current.append(toolboxDetails->name);
+            // Toolbox description found in MED_TOOLBOX_INTERFACE
+            current.append(toolboxDetails->description);
+            // Some toolboxes have multiple categories/workspace, we only keep the first
+            current.append(workspaceName);
+            // Internal toolbox name, class name
+            current.append(toolboxName);
+
+            // Some toolboxes have multiple workspace categories
+            if (toolboxDataHash[toolboxName].isEmpty())
+            {
+                toolboxDataHash[toolboxName] = current;
+            }
+        }
+    }
+    mscSearchToolboxDialog dialog(this, toolboxDataHash);
+
+    if (dialog.exec() == QDialog::Accepted)
+    {
+        // Get back workspace of toolbox chosen by user
+        // Name, Description, Workspace, Internal Name
+        QStringList chosenToolboxInfo = dialog.getFindText();
+        d->quickAccessWidget->manuallyClickOnWorkspaceButton(chosenToolboxInfo.at(2));
+
+        // Display asked toolbox
+        medSelectorToolBox *selector = static_cast<medSelectorWorkspace*>(d->workspaceArea->currentWorkspace())->selectorToolBox();
+        int toolboxIndex = selector->getIndexOfToolBox(chosenToolboxInfo.at(0));
+        if (toolboxIndex > 0)
+        {
+            selector->comboBox()->setCurrentIndex(toolboxIndex);
+            selector->changeCurrentToolBox(toolboxIndex);
+        }
+    }
 }
 
 void medMainWindow::switchToWorkspaceArea()
@@ -691,18 +733,38 @@ void medMainWindow::hideShortcutAccess()
     this->activateWindow();
 }
 
-int medMainWindow::saveModified( void )
+int medMainWindow::saveModifiedAndOrValidateClosing()
 {
     QList<medDataIndex> indexes = medDatabaseNonPersistentController::instance()->availableItems();
 
     if(indexes.isEmpty())
-        return QDialog::Accepted;
+    {
+        // No data to save, pop-up window to validate the closing
 
-    medSaveModifiedDialog *saveDialog = new medSaveModifiedDialog(this);
-    saveDialog->show();
-    saveDialog->exec();
+        QMessageBox msgBox(this);
+        msgBox.setWindowTitle("Closing");
+        msgBox.setText("Do you really want to exit?");
+        msgBox.setStandardButtons(QMessageBox::Yes);
+        msgBox.addButton(QMessageBox::No);
+        msgBox.setDefaultButton(QMessageBox::No);
+        if(msgBox.exec() == QMessageBox::Yes)
+        {
+            return QDialog::Accepted;
+        }
+        else
+        {
+            return QDialog::Rejected;
+        }
+    }
+    else
+    {
+        // User is asked to save, cancel or exit without saving temporary data
 
-    return saveDialog->result();
+        medSaveModifiedDialog *saveDialog = new medSaveModifiedDialog(this);
+        saveDialog->show();
+        saveDialog->exec();
+        return saveDialog->result();
+    }
 }
 
 void medMainWindow::dragEnterEvent(QDragEnterEvent *event)
@@ -762,6 +824,8 @@ void medMainWindow::closeEvent(QCloseEvent *event)
         return;
     }
 
+    dtkInfo() << "### Application is closing...";
+
     if ( QThreadPool::globalInstance()->activeThreadCount() > 0 )
     {
         int res = QMessageBox::information(this,
@@ -787,7 +851,7 @@ void medMainWindow::closeEvent(QCloseEvent *event)
         }
     }
 
-    if(this->saveModified() != QDialog::Accepted)
+    if(this->saveModifiedAndOrValidateClosing() != QDialog::Accepted)
     {
         event->ignore();
         return;
@@ -795,7 +859,11 @@ void medMainWindow::closeEvent(QCloseEvent *event)
 
     d->closeEventProcessed = true;
     this->saveSettings();
+
     event->accept();
+
+    dtkInfo() << "####################################";
+    medLogger::finalize();
 }
 
 

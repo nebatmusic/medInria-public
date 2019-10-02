@@ -27,8 +27,6 @@ public:
 
     void initPage();
 
-    QParallelAnimationGroup * getAnimation();
-
     void resizeEvent( QResizeEvent * event );
 
 public slots:
@@ -40,6 +38,7 @@ public slots:
     void onShowHelp();
     void onShowInfo();
     void onShowComposer();
+    void openLogDirectory();
 
 signals:
     /**

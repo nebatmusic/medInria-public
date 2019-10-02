@@ -2,7 +2,7 @@
 
  medInria
 
- Copyright (c) INRIA 2013 - 2018. All rights reserved.
+ Copyright (c) INRIA 2013 - 2019. All rights reserved.
  See LICENSE.txt for details.
 
   This software is distributed WITHOUT ANY WARRANTY; without even
@@ -13,15 +13,14 @@
 
 #include <medAbstractData.h>
 #include <medAbstractDataFactory.h>
-
-#include <medDataIndex.h>
-#include <medAttachedData.h>
-#include <medAbstractLayeredView.h>
-#include <medViewFactory.h>
 #include <medAbstractImageView.h>
+#include <medAttachedData.h>
+#include <medDataIndex.h>
 #include <medGlobalDefs.h>
+#include <medViewFactory.h>
 
 #include <dtkCoreSupport/dtkSmartPointer.h>
+
 #include <QApplication>
 #include <QMainWindow>
 
@@ -42,16 +41,31 @@ medAbstractData::medAbstractData( medAbstractData *parent )
     : dtkAbstractData(parent)
     , d(new medAbstractDataPrivate)
 {
-    dtkDebug() << "constructing medAbstractData: ";
     this->moveToThread(QApplication::instance()->thread());
 }
 
+medAbstractData::medAbstractData(const medAbstractData &other)
+
+    : dtkAbstractData(other),
+      d(new medAbstractDataPrivate())
+{
+    *d = *other.d;
+    d->index = medDataIndex();
+    for (int i = 0; i < d->attachedData.count(); ++i)
+    {
+        d->attachedData[i] = dynamic_cast<medAttachedData*>(other.d->attachedData[i]->clone());
+    }
+}
 
 medAbstractData::~medAbstractData( void )
 {
-    dtkDebug() << "deleting data with index " << d->index.asString();
     delete d;
-    d = NULL;
+    d = nullptr;
+}
+
+medAbstractData* medAbstractData::clone(void)
+{
+    return new medAbstractData(*this);
 }
 
 /**
@@ -83,7 +97,7 @@ medDataIndex medAbstractData::dataIndex() const
 */
 medAbstractData * medAbstractData::convert(const QString &toType)
 {
-    medAbstractData *conversion = NULL;
+    medAbstractData *conversion = nullptr;
 
     foreach (QString converterId, medAbstractDataFactory::instance()->converters())
     {
@@ -97,7 +111,7 @@ medAbstractData * medAbstractData::convert(const QString &toType)
             if(conversion)
             {
                 foreach(QString metaDataKey, this->metaDataList())
-                    conversion->addMetaData(metaDataKey, this->metaDataValues(metaDataKey));
+                    conversion->setMetaData(metaDataKey, this->metaDataValues(metaDataKey));
 
                 foreach(QString propertyKey, this->propertyList())
                     conversion->addProperty(propertyKey, this->propertyValues(propertyKey));
@@ -162,7 +176,7 @@ void medAbstractData::removeAttachedData( medAttachedData * data )
     d->attachedData.removeAll( data );
     if ( n > d->attachedData.count() ) {
         emit attachedDataRemoved( data );
-        data->setParentData(NULL);
+        data->setParentData(nullptr);
     }
 }
 
@@ -204,29 +218,37 @@ void medAbstractData::generateThumbnail()
     if ( ! gpu.vendor.toLower().contains("intel"))
         offscreenCapable = true;
 #elif defined(Q_OS_LINUX)
-    // only works on NVidia
-    if (gpu.vendor.toLower().contains("nvidia"))
+    if (gpu.vendor.toLower().contains("nvidia")
+            || gpu.vendor.toLower().contains("intel"))
+    {
         offscreenCapable = true;
+    }
 #endif
 
     dtkSmartPointer<medAbstractImageView> view = medViewFactory::instance()->createView<medAbstractImageView>("medVtkView");
 
-    if(offscreenCapable) {
+    if(offscreenCapable)
+    {
         view->setOffscreenRendering(true);
-    } else {
+    }
+    else
+    {
         // We need to get a handle to the main window, so we can A) find its position, and B) ensure it is drawn over the temporary window
         const QVariant property = QApplication::instance()->property("MainWindow");
         QObject* qObject = property.value<QObject*>();
-        QMainWindow* aMainWindow = dynamic_cast<QMainWindow*>(qObject);
-        QWidget * viewWidget = view->viewWidget();
 
-        // Show our view in a seperate, temporary window
-        viewWidget->show();
-        // position the temporary window behind the main application
-        viewWidget->move(aMainWindow->geometry().x(), aMainWindow->geometry().y());
-        // and raise the main window above the temporary
-        aMainWindow->raise();
+        if (qObject)
+        {
+            QMainWindow* aMainWindow = dynamic_cast<QMainWindow*>(qObject);
+            QWidget * viewWidget = view->viewWidget();
 
+            // Show our view in a separate, temporary window
+            viewWidget->show();
+            // position the temporary window behind the main application
+            viewWidget->move(aMainWindow->geometry().x(), aMainWindow->geometry().y());
+            // and raise the main window above the temporary
+            aMainWindow->raise();
+        }
         // We need to wait for the window manager to finish animating before we can continue.
     #ifdef Q_OS_X11
         qt_x11_wait_for_window_manager(viewWidget);

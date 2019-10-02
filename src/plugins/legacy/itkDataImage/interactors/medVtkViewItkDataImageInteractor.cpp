@@ -2,7 +2,7 @@
 
  medInria
 
- Copyright (c) INRIA 2013 - 2018. All rights reserved.
+ Copyright (c) INRIA 2013 - 2019. All rights reserved.
  See LICENSE.txt for details.
 
   This software is distributed WITHOUT ANY WARRANTY; without even
@@ -79,12 +79,12 @@ medVtkViewItkDataImageInteractor::medVtkViewItkDataImageInteractor(medAbstractVi
     medVtkViewBackend* backend = static_cast<medVtkViewBackend*>(parent->backend());
     d->view2d = backend->view2D;
     d->view3d = backend->view3D;
-    d->imageData = NULL;
+    d->imageData = nullptr;
 
-    d->lutParam = NULL;
-    d->presetParam = NULL;
-    d->slicingParameter = NULL;
-    d->enableWindowLevelParameter = NULL;
+    d->lutParam = nullptr;
+    d->presetParam = nullptr;
+    d->slicingParameter = nullptr;
+    d->enableWindowLevelParameter = nullptr;
 
     d->enableInterpolation = nullptr;
 
@@ -96,7 +96,7 @@ medVtkViewItkDataImageInteractor::medVtkViewItkDataImageInteractor(medAbstractVi
 medVtkViewItkDataImageInteractor::~medVtkViewItkDataImageInteractor()
 {
     delete d;
-    d = NULL;
+    d = nullptr;
 }
 
 QStringList medVtkViewItkDataImageInteractor::dataHandled()
@@ -127,7 +127,6 @@ QString medVtkViewItkDataImageInteractor::description() const
     return tr("Interactor for ITK images");
 }
 
-
 QString medVtkViewItkDataImageInteractor::identifier() const
 {
     return "medVtkViewItkDataImageInteractor";
@@ -145,6 +144,7 @@ QList<medAbstractParameterL*> medVtkViewItkDataImageInteractor::linkableParamete
 {
     QList<medAbstractParameterL*> params;
     params.append(d->lutParam);
+    params.append(d->slicingParameter);
     params.append(d->presetParam);
     params.append(this->visibilityParameter());
     params.append(this->windowLevelParameter());
@@ -653,26 +653,13 @@ void medVtkViewItkDataImageInteractor::updateImageViewInternalLayer()
 
 void medVtkViewItkDataImageInteractor::updateSlicingParam()
 {
-    if(!d->view->is2D())
-        return;
-
-    //TODO Should be set according to the real number of slice of this data and
-    // not according to vtkInria (ie. first layer droped) - RDE
-
-    // slice orientation may differ from view orientation. Adapt slider range accordingly.
-//    int orientationId = d->view2d->GetSliceOrientation();
-//    if (orientationId==vtkImageView2D::SLICE_ORIENTATION_XY)
-//        d->slicingParameter->setRange(0, d->imageData->zDimension()-1);
-//    else if (orientationId==vtkImageView2D::SLICE_ORIENTATION_XZ)
-//        d->slicingParameter->setRange (0, d->imageData->yDimension()-1);
-//    else if (orientationId==vtkImageView2D::SLICE_ORIENTATION_YZ)
-//        d->slicingParameter->setRange (0, d->imageData->xDimension()-1);
-
-    d->slicingParameter->blockSignals(true);
-    d->slicingParameter->setRange(d->view2d->GetSliceMin(), d->view2d->GetSliceMax());
-    d->slicingParameter->blockSignals(false);
-
-    d->slicingParameter->setValue(d->view2d->GetSlice());
+    if(d->view->is2D())
+    {
+        d->slicingParameter->blockSignals(true);
+        d->slicingParameter->setRange(d->view2d->GetSliceMin(), d->view2d->GetSliceMax());
+        d->slicingParameter->setValue(d->view2d->GetSlice());
+        d->slicingParameter->blockSignals(false);
+    }
 }
 
 void medVtkViewItkDataImageInteractor::enableWindowLevel(bool enable)

@@ -36,6 +36,7 @@
 #include <vtkInriaInteractorStyleRubberBandZoom.h>
 #include <vtkMatrix4x4.h>
 #include <vtkMath.h>
+#include <vtkMetaDataSet.h>
 
 #include <medViewFactory.h>
 #include <medVtkViewBackend.h>
@@ -315,9 +316,15 @@ QVector3D medVtkView::viewCenter()
 {
     vtkRenderer * ren;
     if(this->is2D())
+    {
         ren = d->view2d->GetRenderer();
+    }
     else
-        ren = d->view3d->GetRenderer();    double fp[3];
+    {
+        ren = d->view3d->GetRenderer();
+    }
+
+    double fp[3];
     ren->GetActiveCamera()->GetFocalPoint( fp);
     return QVector3D( fp[0], fp[1], fp[2] );
 }
@@ -327,9 +334,15 @@ QVector3D medVtkView::viewPlaneNormal()
     double vpn[3];
     vtkRenderer * ren;
     if(this->is2D())
+    {
         ren = d->view2d->GetRenderer();
+    }
     else
-        ren = d->view3d->GetRenderer();    ren->GetActiveCamera()->GetViewPlaneNormal(vpn);
+    {
+        ren = d->view3d->GetRenderer();
+    }
+
+    ren->GetActiveCamera()->GetViewPlaneNormal(vpn);
     return QVector3D(vpn[0], vpn[1], vpn[2]);
 }
 
@@ -338,9 +351,13 @@ QVector3D medVtkView::viewUp()
     double vup[3];
     vtkRenderer * ren;
     if(this->is2D())
+    {
         ren = d->view2d->GetRenderer();
+    }
     else
+    {
         ren = d->view3d->GetRenderer();
+    }
 
     ren->GetActiveCamera()->GetViewUp(vup);
     return QVector3D(vup[0], vup[1], vup[2]);
@@ -528,4 +545,23 @@ void medVtkView::setOffscreenRendering(bool isOffscreen)
 void medVtkView::resetKeyboardInteractionModifier()
 {
     d->rubberBandZoomParameter->setValue(false);
+}
+
+void medVtkView::resetCameraOnLayer(int layer)
+{
+    medAbstractData *data = layerData(layer);
+    if (data && (data->identifier() == "vtkDataMesh" || data->identifier() == "EPMap"))
+    {
+        vtkMetaDataSet *metaDataSet = static_cast<vtkMetaDataSet*>(data->data());
+        vtkDataSet *arg = metaDataSet->GetDataSet();
+        if(this->is2D())
+        {
+            d->view2d->ResetCamera(arg);
+        }
+        else
+        {
+            d->view3d->ResetCamera(arg);
+        }
+        this->render();
+    }
 }

@@ -2,7 +2,7 @@
 
  medInria
 
- Copyright (c) INRIA 2013 - 2018. All rights reserved.
+ Copyright (c) INRIA 2013 - 2019. All rights reserved.
  See LICENSE.txt for details.
 
   This software is distributed WITHOUT ANY WARRANTY; without even
@@ -32,7 +32,7 @@
 medDatabaseNonPersistentImporter::medDatabaseNonPersistentImporter (const QString& file, const QUuid& uuid )
 : medAbstractDatabaseImporter(file, uuid, true)
 {
-    dtkDebug() << "medDatabaseNonPersistentImporter created with uuid:" << this->callerUuid();
+    qDebug() << "medDatabaseNonPersistentImporter created with uuid:" << this->callerUuid();
 }
 
 //-----------------------------------------------------------------------------------------------------------
@@ -40,7 +40,7 @@ medDatabaseNonPersistentImporter::medDatabaseNonPersistentImporter (const QStrin
 medDatabaseNonPersistentImporter::medDatabaseNonPersistentImporter (medAbstractData* medData, const QUuid &uuid )
 : medAbstractDatabaseImporter(medData, uuid, true)
 {
-    dtkDebug() << "medDatabaseNonPersistentImporter created with uuid:" << this->callerUuid();
+    qDebug() << "medDatabaseNonPersistentImporter created with uuid:" << this->callerUuid();
 }
 
 //-----------------------------------------------------------------------------------------------------------
@@ -104,11 +104,11 @@ medDataIndex medDatabaseNonPersistentImporter::populateDatabaseAndGenerateThumbn
 
     // check if patient is already in the persistent database
     medDataIndex databaseIndex = medDatabaseController::instance()->indexForPatient ( patientName );
-    medDatabaseNonPersistentItem *patientItem = NULL;
+    medDatabaseNonPersistentItem *patientItem = nullptr;
 
     if ( databaseIndex.isValid() )
     {
-        dtkDebug() << "Patient exists in the database, I reuse his Id";
+        qDebug() << "Patient exists in the database, I reuse his Id";
         patientDbId = databaseIndex.patientId();
     }
     else
@@ -131,15 +131,15 @@ medDataIndex medDatabaseNonPersistentImporter::populateDatabaseAndGenerateThumbn
 
     medDataIndex index;
 
-    if ( patientItem == NULL )
+    if ( patientItem == nullptr )
     {
         // create an item for patient
         patientItem = new medDatabaseNonPersistentItem;
         index = medDataIndex ( npdc->dataSourceId(), patientDbId, -1, -1, -1 );
 
         medAbstractData *medData = new medAbstractData();
-        medData->addMetaData ( medMetaDataKeys::PatientName.key(), QStringList() <<  patientName );
-        medData->addMetaData ( medMetaDataKeys::BirthDate.key(), birthdate );
+        medData->setMetaData ( medMetaDataKeys::PatientName.key(), QStringList() <<  patientName );
+        medData->setMetaData ( medMetaDataKeys::BirthDate.key(), birthdate );
 
         patientItem->d->name = patientName;
         patientItem->d->patientId = patientId;
@@ -167,7 +167,7 @@ medDataIndex medDatabaseNonPersistentImporter::populateDatabaseAndGenerateThumbn
 
         if ( databaseIndex.isValid() )
         {
-            dtkDebug() << "Study exists in the database, I reuse its Id";
+            qDebug() << "Study exists in the database, I reuse its Id";
             studyDbId = databaseIndex.studyId();
         }
         else
@@ -185,7 +185,7 @@ medDataIndex medDatabaseNonPersistentImporter::populateDatabaseAndGenerateThumbn
         {
             studyDbId = npdc->studyId ( true );
         }
-        if ( studyItem == NULL )
+        if ( studyItem == nullptr )
         {
             // create an item for study
             studyItem = new medDatabaseNonPersistentItem;
@@ -193,11 +193,11 @@ medDataIndex medDatabaseNonPersistentImporter::populateDatabaseAndGenerateThumbn
 
             medAbstractData *medData = new medAbstractData();
 
-            medData->addMetaData ( medMetaDataKeys::PatientName.key(), QStringList() << patientName );
-            medData->addMetaData ( medMetaDataKeys::BirthDate.key(), birthdate );
-            medData->addMetaData ( medMetaDataKeys::StudyDescription.key(), QStringList() << studyName );
-            medData->addMetaData ( medMetaDataKeys::StudyID.key(), QStringList() << studyId );
-            medData->addMetaData ( medMetaDataKeys::StudyDicomID.key(), QStringList() << studyUid );
+            medData->setMetaData ( medMetaDataKeys::PatientName.key(), QStringList() << patientName );
+            medData->setMetaData ( medMetaDataKeys::BirthDate.key(), birthdate );
+            medData->setMetaData ( medMetaDataKeys::StudyDescription.key(), QStringList() << studyName );
+            medData->setMetaData ( medMetaDataKeys::StudyID.key(), QStringList() << studyId );
+            medData->setMetaData ( medMetaDataKeys::StudyDicomID.key(), QStringList() << studyUid );
 
             studyItem->d->name = patientName;
             studyItem->d->patientId = patientId;
@@ -309,9 +309,15 @@ QString medDatabaseNonPersistentImporter::ensureUniqueSeriesName ( const QString
             seriesNames << sname;
     }
 
-    QString originalSeriesName = seriesName;
     QString newSeriesName = seriesName;
     int suffix = 0;
+
+    if (seriesName == "")
+    {
+        newSeriesName = "UnnamedSeries";
+    }
+
+    QString originalSeriesName = newSeriesName;
 
     while (seriesNames.contains(newSeriesName))
     {

@@ -4,19 +4,16 @@
 
  Copyright (c) INRIA 2013 - 2018. All rights reserved.
  See LICENSE.txt for details.
- 
+
   This software is distributed WITHOUT ANY WARRANTY; without even
   the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
   PURPOSE.
 
 =========================================================================*/
 
-#include <medActionsToolBox.h>
-
-#include <QtGui>
-
-#include <medDataManager.h>
 #include <medAbstractDbController.h>
+#include <medActionsToolBox.h>
+#include <medDataManager.h>
 #include <medToolBoxBody.h>
 
 class medActionsToolBoxPrivate
@@ -25,6 +22,7 @@ public:
 
     QWidget* buttonsWidget;
     QWidget* noButtonsSelectedWidget;
+    QWidget* informationWidget;
 
     QPushButton* removeBt;
     QPushButton* viewBt;
@@ -58,35 +56,45 @@ medActionsToolBox::medActionsToolBox( QWidget *parent /*= 0*/, bool FILE_SYSTEM 
     d->buttonsWidget = new QWidget(this);
     d->noButtonsSelectedWidget = new QWidget(this);
 
+    // Information Widget for File System tab
+    d->informationWidget = new QWidget(this);
+    QLabel* informationLabel = new QLabel(tr("To import DICOMs, select the directory containing these files.\nDo not select them separately."),
+                                          d->informationWidget);
+    informationLabel->setObjectName("actionToolBoxLabel");
+    informationLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+    informationLabel->setWordWrap(true);
+    QHBoxLayout* informationLayout = new QHBoxLayout(d->informationWidget);
+    informationLayout->addWidget(informationLabel, 0, Qt::AlignLeft);
+    this->addWidget(d->informationWidget);
+
     initializeItemToActionsMap();
 
 
     d->viewBt = new QPushButton(d->buttonsWidget);
     d->viewBt->setAccessibleName("View");
     d->viewBt->setText(tr("View"));
-    d->viewBt->setToolTip(tr("Load and visualize the currently selected item."));
+    d->viewBt->setToolTip(tr("Temporarily import (if the data is not already in the database)\nand visualize the currently selected item."));
     d->viewBt->setIcon(QIcon(":/icons/eye.png"));
     connect(d->viewBt, SIGNAL(clicked()), this, SIGNAL(viewClicked()));
-
 
     if (FILE_SYSTEM)
     {
         d->loadBt = new QPushButton(d->buttonsWidget);
-        d->loadBt->setAccessibleName("Load");
-        d->loadBt->setText(tr("Load"));
-        d->loadBt->setToolTip(tr("Temporary load the item(s) so as they can be used inside medInria,\nbut do not include them in the database."));
+        d->loadBt->setAccessibleName("Temporary Import");
+        d->loadBt->setText(tr("Temporary Import"));
+        d->loadBt->setToolTip(tr("Temporarily import the item(s) so as they can be used inside the application,\nbut do not include them in the database."));
         d->loadBt->setIcon(QIcon(":/icons/document-open.png"));
 
         d->importBt = new QPushButton(d->buttonsWidget);
         d->importBt->setAccessibleName("Import");
         d->importBt->setText(tr("Import"));
-        d->importBt->setToolTip(tr("Import (copy) item(s) into medInria's database."));
+        d->importBt->setToolTip(tr("Import (copy) item(s) into the database."));
         d->importBt->setIcon(QIcon(":/icons/import.png"));
 
         d->indexBt = new QPushButton(d->buttonsWidget);
         d->indexBt->setAccessibleName("Index");
         d->indexBt->setText(tr("Index"));
-        d->indexBt->setToolTip(tr("Include the item(s) into medInria's database but do not import (copy) them."));
+        d->indexBt->setToolTip(tr("Include the item(s) into the database but do not import (copy) them."));
         d->indexBt->setIcon(QIcon(":/icons/finger.png"));
 
         d->bookmarkBt = new QPushButton(d->buttonsWidget);
@@ -94,15 +102,17 @@ medActionsToolBox::medActionsToolBox( QWidget *parent /*= 0*/, bool FILE_SYSTEM 
         d->bookmarkBt->setText(tr("Bookmark"));
         d->bookmarkBt->setToolTip(tr("Bookmark selected folder/resource."));
         d->bookmarkBt->setIcon(QIcon(":/icons/star.svg"));
-        
+
         connect(d->bookmarkBt, SIGNAL(clicked()), this, SIGNAL(bookmarkClicked()));
         connect(d->importBt, SIGNAL(clicked()), this, SIGNAL(importClicked()));
         connect(d->loadBt, SIGNAL(clicked()), this, SIGNAL(loadClicked()));
         connect(d->indexBt, SIGNAL(clicked()), this, SIGNAL(indexClicked()));
 
         // the order of the buttons in this list determines the order used to place them in the grid layout
-        d->buttonsList << d->viewBt << d->loadBt << d->importBt << d->indexBt <<d->bookmarkBt;}
+        d->buttonsList << d->viewBt << d->loadBt << d->importBt << d->indexBt << d->bookmarkBt;
 
+        d->informationWidget->setVisible(true);
+    }
     else //IF DATABASE
     {
         d->saveBt = new QPushButton(d->buttonsWidget);
@@ -110,19 +120,19 @@ medActionsToolBox::medActionsToolBox( QWidget *parent /*= 0*/, bool FILE_SYSTEM 
         d->saveBt->setText(tr("Save"));
         d->saveBt->setToolTip(tr("Save selected item into the database."));
         d->saveBt->setIcon(QIcon(":/icons/save.png"));
-    
+
         d->newPatientBt = new QPushButton(d->buttonsWidget);
         d->newPatientBt->setAccessibleName("New Patient");
         d->newPatientBt->setText("Patient");
         d->newPatientBt->setToolTip(tr("Create a new patient."));
         d->newPatientBt->setIcon(QIcon(":/icons/user_add.png"));
-    
+
         d->newStudyBt = new QPushButton(d->buttonsWidget);
         d->newStudyBt->setAccessibleName("New Study");
         d->newStudyBt->setText("Study");
         d->newStudyBt->setToolTip(tr("Create a new study."));
         d->newStudyBt->setIcon(QIcon(":/icons/page_add.png"));
-    
+
         d->editBt = new QPushButton(d->buttonsWidget);
         d->editBt->setAccessibleName("Edit");
         d->editBt->setText("Edit");
@@ -147,12 +157,14 @@ medActionsToolBox::medActionsToolBox( QWidget *parent /*= 0*/, bool FILE_SYSTEM 
         connect(d->newPatientBt, SIGNAL(clicked()), this, SIGNAL(newPatientClicked()));
         connect(d->newStudyBt, SIGNAL(clicked()), this, SIGNAL(newStudyClicked()));
         connect(d->editBt, SIGNAL(clicked()), this, SIGNAL(editClicked()));
-        
+
         d->buttonsList << d->viewBt << d->saveBt << d->exportBt << d->removeBt;
         d->buttonsList << d->newPatientBt << d->newStudyBt << d->editBt;
+
+        d->informationWidget->setVisible(false);
     }
 
-    int COLUMNS = 4; // we will use 3 rows of 4 buttons each
+    int COLUMNS = 3; // we will use 3 rows of 3 buttons each
     int i = 0;
     QGridLayout *gridLayout = new QGridLayout(d->buttonsWidget);
     gridLayout->setHorizontalSpacing(4);
@@ -172,6 +184,7 @@ medActionsToolBox::medActionsToolBox( QWidget *parent /*= 0*/, bool FILE_SYSTEM 
                 tr("Select any item to see possible actions."),
                 d->noButtonsSelectedWidget);
     noButtonsSelectedLabel->setObjectName("actionToolBoxLabel");
+
     // we use a layout to center the label
     QHBoxLayout* noButtonsSelectedLayout = new QHBoxLayout(d->noButtonsSelectedWidget);
     noButtonsSelectedLayout->addWidget(noButtonsSelectedLabel, 0, Qt::AlignCenter);
@@ -182,10 +195,8 @@ medActionsToolBox::medActionsToolBox( QWidget *parent /*= 0*/, bool FILE_SYSTEM 
 
 medActionsToolBox::~medActionsToolBox()
 {
-//    delete d->itemToActions;
-//    d->itemToActions = NULL;
     delete d;
-    d = NULL;
+    d = nullptr;
 }
 
 /**
@@ -196,9 +207,30 @@ medActionsToolBox::~medActionsToolBox()
 void medActionsToolBox::patientSelected(const medDataIndex& index)
 {
     if( !(medDataManager::instance()->controllerForDataSource(index.dataSourceId())->isPersistent()) )
+    {
         updateButtons("Unsaved Patient");
+    }
     else
+    {
         updateButtons("Patient");
+    }
+}
+
+/**
+* Slot to call when an item representing a study has been selected.
+* The appropriate buttons will appear in the toolbox.
+* @param index – the medDataIndex of the db item
+**/
+void medActionsToolBox::studySelected(const medDataIndex& index)
+{
+    if( !(medDataManager::instance()->controllerForDataSource(index.dataSourceId())->isPersistent()) )
+    {
+        updateButtons("Unsaved Study");
+    }
+    else
+    {
+        updateButtons("Study");
+    }
 }
 
 /**
@@ -209,9 +241,13 @@ void medActionsToolBox::patientSelected(const medDataIndex& index)
 void medActionsToolBox::seriesSelected(const medDataIndex& index)
 {
     if( !(medDataManager::instance()->controllerForDataSource(index.dataSourceId())->isPersistent()) )
+    {
         updateButtons("Unsaved Series");
+    }
     else
+    {
         updateButtons("Series");
+    }
 }
 
 /**
@@ -221,11 +257,6 @@ void medActionsToolBox::seriesSelected(const medDataIndex& index)
 void medActionsToolBox::noPatientOrSeriesSelected()
 {
     updateButtons("None");
-}
-
-void medActionsToolBox::multipleEntriesSelected(const QVector<medDataIndex> &selectedIndexes)
-{
-    updateButtons("Multiple Select");
 }
 
 /**
@@ -264,7 +295,7 @@ void medActionsToolBox::updateButtons(QString selectedItem)
 
     foreach(QAbstractButton* bt, d->buttonsList)
     {
-        bt->setVisible(true); 
+        bt->setVisible(true);
         bool showButton = actions.contains( bt->accessibleName() );
         bt->setEnabled(showButton); // Not accessible buttons are disabled
     }
@@ -286,7 +317,10 @@ void medActionsToolBox::initializeItemToActionsMap()
 {
     d->itemToActions = QMultiMap<QString, QString>();
 
+    // DATABASE
+
     d->itemToActions.insert("Patient", "Remove");
+    d->itemToActions.insert("Patient", "Export");
     d->itemToActions.insert("Patient", "New Patient");
     d->itemToActions.insert("Patient", "New Study");
     d->itemToActions.insert("Patient", "Edit");
@@ -296,6 +330,16 @@ void medActionsToolBox::initializeItemToActionsMap()
     d->itemToActions.insert("Unsaved Patient", "New Patient");
     d->itemToActions.insert("Unsaved Patient", "New Study");
     d->itemToActions.insert("Unsaved Patient", "Edit");
+
+    d->itemToActions.insert("Study", "Remove");
+    d->itemToActions.insert("Study", "Export");
+    d->itemToActions.insert("Study", "New Patient");
+    d->itemToActions.insert("Study", "Edit");
+
+    d->itemToActions.insert("Unsaved Study", "Remove");
+    d->itemToActions.insert("Unsaved Study", "Save");
+    d->itemToActions.insert("Unsaved Study", "New Patient");
+    d->itemToActions.insert("Unsaved Study", "Edit");
 
     d->itemToActions.insert("Series", "View");
     d->itemToActions.insert("Series", "Export");
@@ -310,21 +354,21 @@ void medActionsToolBox::initializeItemToActionsMap()
     d->itemToActions.insert("Unsaved Series", "New Patient");
     d->itemToActions.insert("Unsaved Series", "Edit");
 
+    // FILE_SYSTEM
+
     d->itemToActions.insert("Folders", "Bookmark");
     d->itemToActions.insert("Folders", "Import");
     d->itemToActions.insert("Folders", "Index");
-    d->itemToActions.insert("Folders", "Load");
+    d->itemToActions.insert("Folders", "Temporary Import");
     d->itemToActions.insert("Folders", "View");
 
     d->itemToActions.insert("Files", "Import");
     d->itemToActions.insert("Files", "Index");
-    d->itemToActions.insert("Files", "Load");
+    d->itemToActions.insert("Files", "Temporary Import");
     d->itemToActions.insert("Files", "View");
 
     d->itemToActions.insert("Files & Folders", "Import");
     d->itemToActions.insert("Files & Folders", "Index");
-    d->itemToActions.insert("Files & Folders", "Load");
+    d->itemToActions.insert("Files & Folders", "Temporary Import");
     d->itemToActions.insert("Files & Folders", "View");
-
-    d->itemToActions.insert("Multiple Select", "Remove");
 }
