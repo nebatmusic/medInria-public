@@ -83,15 +83,12 @@ public:
 
     medAbstractImageViewNavigator* primaryNavigator;
     QList<medAbstractNavigator*> extraNavigators;
-
-    medTriggerParameterL *fourViewsParameter;
 };
 
 medAbstractImageView::medAbstractImageView(QObject *parent) : medAbstractLayeredView(parent),
     d(new medAbstractImageViewPrivate)
 {
-    d->primaryNavigator = NULL;
-    d->fourViewsParameter = NULL;
+    d->primaryNavigator = nullptr;
 }
 
 medAbstractImageView::~medAbstractImageView()
@@ -104,21 +101,10 @@ medAbstractImageView::~medAbstractImageView()
     delete d;
 }
 
-void medAbstractImageView::removeData(medAbstractData *data)
-{
-    medAbstractLayeredView::removeData(data);
-
-    if( this->layersCount() == 0 && d->fourViewsParameter)
-    {
-        delete d->fourViewsParameter;
-        d->fourViewsParameter = 0;
-    }
-}
-
 medAbstractImageViewInteractor* medAbstractImageView::primaryInteractor(medAbstractData* data)
 {
     if(d->primaryInteractorsHash.isEmpty())
-        return NULL;
+        return nullptr;
 
     return d->primaryInteractorsHash.value(data);
 }
@@ -233,16 +219,6 @@ bool medAbstractImageView::initialiseNavigators()
     return true;
 }
 
-QWidget* medAbstractImageView::toolBarWidget()
-{
-    QWidget* toolbar = medAbstractView::toolBarWidget();
-
-    if(toolbar->layout())
-        toolbar->layout()->addWidget(this->fourViewsParameter()->getPushButton());
-
-    return toolbar;
-}
-
 void medAbstractImageView::switchToFourViews()
 {
     medViewContainer *topLeftContainer = dynamic_cast <medViewContainer *> (this->parent());
@@ -257,17 +233,18 @@ void medAbstractImageView::switchToFourViews()
     foreach(medDataIndex index, this->dataList())
     {
         medAbstractData *data = medDataManager::instance()->retrieveData(index);
-        if (!data)
-            continue;
-
-        topRightContainer->addData(data);
-        bottomLeftContainer->addData(data);
-        bottomRightContainer->addData(data);
+        if (data)
+        {
+            topRightContainer->addData(data);
+            bottomLeftContainer->addData(data);
+            bottomRightContainer->addData(data);
+        }
     }
 
     this->setOrientation(medImageView::VIEW_ORIENTATION_3D);
-    medAbstractImageView *bottomLeftContainerView = dynamic_cast <medAbstractImageView *> (bottomLeftContainer->view());
-    medAbstractImageView *topRightContainerView = dynamic_cast <medAbstractImageView *> (topRightContainer->view());
+
+    medAbstractImageView *bottomLeftContainerView  = dynamic_cast <medAbstractImageView *> (bottomLeftContainer->view());
+    medAbstractImageView *topRightContainerView    = dynamic_cast <medAbstractImageView *> (topRightContainer->view());
     medAbstractImageView *bottomRightContainerView = dynamic_cast <medAbstractImageView *> (bottomRightContainer->view());
 
     bottomLeftContainerView->setOrientation(medImageView::VIEW_ORIENTATION_AXIAL);
@@ -284,12 +261,13 @@ void medAbstractImageView::switchToFourViews()
         linkGroupName = linkGroupBaseName + QString::number(linkGroupNumber);
     }
 
-    medViewParameterGroupL* viewGroup = new medViewParameterGroupL(linkGroupName, this);
+    medViewParameterGroupL *viewGroup = new medViewParameterGroupL(linkGroupName, this);
     viewGroup->addImpactedView(this);
     viewGroup->addImpactedView(topRightContainerView);
     viewGroup->addImpactedView(bottomLeftContainerView);
     viewGroup->addImpactedView(bottomRightContainerView);
     viewGroup->setLinkAllParameters(true);
+    viewGroup->removeParameter("Slicing");
     viewGroup->removeParameter("Orientation");
 
     for (unsigned int i = 0;i < this->layersCount();++i)
@@ -297,6 +275,7 @@ void medAbstractImageView::switchToFourViews()
         QString linkLayerName = linkGroupBaseName + QString::number(linkGroupNumber) + " Layer " + QString::number(i+1);
         medLayerParameterGroupL* layerGroup = new medLayerParameterGroupL(linkLayerName, this);
         layerGroup->setLinkAllParameters(true);
+        layerGroup->removeParameter("Slicing");
         layerGroup->addImpactedlayer(this, this->layerData(i));
         layerGroup->addImpactedlayer(topRightContainerView, topRightContainerView->layerData(i));
         layerGroup->addImpactedlayer(bottomLeftContainerView, bottomLeftContainerView->layerData(i));
@@ -304,11 +283,17 @@ void medAbstractImageView::switchToFourViews()
     }
 
     foreach(medAbstractParameterL* param, this->linkableParameters())
+    {
         param->trigger();
+    }
 
     for (unsigned int i = 0;i < this->layersCount();++i)
+    {
         foreach(medAbstractParameterL* param, this->linkableParameters(i))
+        {
             param->trigger();
+        }
+    }
 
     topLeftContainer->setSelected(true);
 }
@@ -343,7 +328,7 @@ medAbstractVector3DParameterL *medAbstractImageView::positionBeingViewedParamete
     medAbstractImageViewNavigator* pNavigator = this->primaryNavigator();
     if(!pNavigator)
     {
-        return NULL;
+        return nullptr;
     }
 
     return pNavigator->positionBeingViewedParameter();
@@ -354,24 +339,10 @@ medDoubleParameterL *medAbstractImageView::opacityParameter(unsigned int layer)
     medAbstractImageViewInteractor* pInteractor = this->primaryInteractor(layer);
     if(!pInteractor)
     {
-        return NULL;
+        return nullptr;
     }
 
     return pInteractor->opacityParameter();
-}
-
-medTriggerParameterL *medAbstractImageView::fourViewsParameter()
-{
-    if (!d->fourViewsParameter)
-    {
-        d->fourViewsParameter = new medTriggerParameterL("Four views", this);
-        QIcon fourViewsIcon (":/icons/fourViews.png");
-        d->fourViewsParameter->setButtonIcon(fourViewsIcon);
-
-        connect(d->fourViewsParameter,SIGNAL(triggered()),this,SLOT(switchToFourViews()));
-    }
-
-    return d->fourViewsParameter;
 }
 
 /**
@@ -383,7 +354,7 @@ medCompositeParameterL *medAbstractImageView::windowLevelParameter(unsigned int 
     medAbstractImageViewInteractor* pInteractor = this->primaryInteractor(layer);
     if(!pInteractor)
     {
-        return NULL;
+        return nullptr;
     }
 
     return pInteractor->windowLevelParameter();
@@ -394,7 +365,7 @@ medTimeLineParameterL *medAbstractImageView::timeLineParameter()
     medAbstractImageViewNavigator* pNavigator = this->primaryNavigator();
     if(!pNavigator)
     {
-        return NULL;
+        return nullptr;
     }
 
     return pNavigator->timeLineParameter();

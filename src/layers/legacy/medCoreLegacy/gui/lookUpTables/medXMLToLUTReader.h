@@ -13,20 +13,23 @@
 
 #pragma once
 
+#include <medCoreLegacyExport.h>
+
 #include <medClutEditor.h>
 #include <qiodevice.h>
 #include <qstring.h>
 #include <qlist.h>
 
-
 class medXMLToLUTReaderPrivate;
 
-class medXMLToLUTReader {
+class MEDCORELEGACY_EXPORT medXMLToLUTReader
+{
 public:
-    medXMLToLUTReader(QList<medClutEditorTable*> * tables);
+    medXMLToLUTReader(QList<medClutEditorTable*> * tables, medClutEditorScene *scene);
     ~medXMLToLUTReader();
     bool read(QIODevice *device);
     QString errorString() const;
+
 private:
     medXMLToLUTReaderPrivate * d;
 };

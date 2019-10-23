@@ -48,14 +48,25 @@ set(PLUGIN_LIST
   legacy/qtdcmDataSource                                                 ON
   legacy/itkDataSHImage                                                  ON
   legacy/undoRedoRegistration                                            ON
-  legacy/itkProcessRegistrationDiffeomorphicDemons                       ON
+  legacy/diffeomorphicDemons                                             ON
   legacy/medVtkView                                                      ON
+  legacy/medFilteringWorkspaceL                                          ON
+  legacy/medSegmentationWorkspace                                        ON
+  legacy/medRegistrationWorkspace                                        ON
   legacy/medMaskApplication                                              ON
   legacy/medBinaryOperation                                              ON
   legacy/manualRegistration                                              ON
   legacy/polygonRoi                                                      ON
-  legacy/mscAlgorithmPaint                                               ON
+  legacy/medAlgorithmPaint                                               ON
   legacy/variationalSegmentation                                         ON
+  legacy/voiCutter                                                       ON
+  legacy/reformat                                                        ON
+  legacy/medMeshingWorkspace                                             ON
+  legacy/medCreateMeshFromMask                                           ON
+  legacy/medRemeshing                                                    ON
+  legacy/meshMapping                                                     ON
+  legacy/meshManipulation                                                ON
+  legacy/iterativeClosestPoint                                           ON
   process/arithmetic_operation                                           ON
   process/bias_correction                                                ON
   process/dwi_basic_thresholding                                         ON

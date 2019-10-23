@@ -22,6 +22,9 @@
         <file>icons/workspace_Filtering.png</file>
         <file>icons/workspace_Segmentation.png</file>
         <file>icons/workspace_Generic.png</file>
+        <file>icons/workspace_Filtering dtk2.png</file>
+        <file>icons/workspace_Meshing.png</file>
+        <file>icons/workspace_Reformat.png</file>
         <file>icons/folder.png</file>
         <file>icons/home.png</file>
         <file>icons/composer.png</file>
@@ -31,6 +34,7 @@
         <file>icons/error_go.png</file>
         <file>icons/exclamation.png</file>
         <file>icons/eye.png</file>
+        <file>icons/Gaussian_Filter.png</file>
         <file>icons/help.png</file>
         <file>icons/help.svg</file>
         <file>icons/information.png</file>
@@ -154,5 +158,6 @@
         <file>pixmaps/arrow-bot-disabled.png</file>
         <file>pixmaps/arrow-bot.png</file>
         <file>icons/adjust_size.png</file>
+        <file>icons/adjust_size_grey.png</file>
     </qresource>
 </RCC>

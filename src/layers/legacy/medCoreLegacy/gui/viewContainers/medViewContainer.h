@@ -72,6 +72,9 @@ public:
     void addColorIndicator(QColor color, QString description="");
     void removeColorIndicator(QColor color);
 
+    bool userValidationForStudyDrop();
+    void enableHistogramAction(bool state);
+
 public slots:
     void setView(medAbstractView* view);
     void removeView();
@@ -80,7 +83,8 @@ public slots:
 
     void setSelected(bool selected);
     void setUnSelected(bool unSelected);
-    void toggleMaximized();
+    void toggleMaximized(bool checked);
+    void toggleHistogram(bool checked);
     void setUserSplittable(bool splittable);
     void setClosingMode(enum ClosingMode mode);
     void setMultiLayered(bool multiLayer);
@@ -106,7 +110,11 @@ signals:
     void viewContentChanged();
     void dataAdded(medAbstractData *);
     void viewRemoved();
+    void requestFourSplit();
 
+public slots:
+    void clickHistoAction(bool checked);
+    QAction *histogramAction();
 
 protected:
     void focusInEvent(QFocusEvent *event);

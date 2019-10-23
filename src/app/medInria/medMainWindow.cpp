@@ -25,6 +25,7 @@
 #include <medMainWindow.h>
 #include <medQuickAccessMenu.h>
 #include <medSaveModifiedDialog.h>
+#include <medSearchToolboxDialog.h>
 #include <medSelectorToolBox.h>
 #include <medSelectorWorkspace.h>
 #include <medSettingsEditor.h>
@@ -35,7 +36,6 @@
 #include <medVisualizationWorkspace.h>
 #include <medWorkspaceArea.h>
 #include <medWorkspaceFactory.h>
-#include <mscSearchToolboxDialog.h>
 
 #include <QtGui>
 #include <QtWidgets>
@@ -206,7 +206,8 @@ medMainWindow::medMainWindow ( QWidget *parent ) : QMainWindow ( parent ), d ( n
     QObject::connect(d->screenshotButton, SIGNAL(clicked()), this, SLOT(captureScreenshot()));
 
     QIcon adjustIcon;
-    adjustIcon.addPixmap(QPixmap(":icons/adjust_size.png"),QIcon::Normal);
+    adjustIcon.addPixmap(QPixmap(":icons/adjust_size.png"),      QIcon::Normal);
+    adjustIcon.addPixmap(QPixmap(":icons/adjust_size_grey.png"), QIcon::Disabled);
     d->adjustSizeButton = new QToolButton(this);
     d->adjustSizeButton->setIcon(adjustIcon);
     d->adjustSizeButton->setObjectName("adjustSizeButton");
@@ -302,6 +303,9 @@ void medMainWindow::saveSettings()
         medSettingsManager * mnger = medSettingsManager::instance();
         mnger->setValue("medMainWindow", "state", this->saveState());
         mnger->setValue("medMainWindow", "geometry", this->saveGeometry());
+
+        // Keep the current screen for multiple-screens display
+        mnger->setValue("medMainWindow", "currentScreen", QApplication::desktop()->screenNumber(this));
     }
 }
 
@@ -562,7 +566,7 @@ void medMainWindow::switchToSearchArea()
             }
         }
     }
-    mscSearchToolboxDialog dialog(this, toolboxDataHash);
+    medSearchToolboxDialog dialog(this, toolboxDataHash);
 
     if (dialog.exec() == QDialog::Accepted)
     {

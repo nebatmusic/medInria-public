@@ -38,6 +38,7 @@
 #include <vtkMath.h>
 #include <vtkMetaDataSet.h>
 
+#include <medClutEditorToolBox.h>
 #include <medViewFactory.h>
 #include <medVtkViewBackend.h>
 #include <medAbstractImageViewInteractor.h>
@@ -75,6 +76,8 @@ public:
     medVtkViewObserver *observer;
 
     medBoolParameterL *rubberBandZoomParameter;
+
+    QPointer<medClutEditorToolBox> transFun;
 
     QScopedPointer<medVtkViewBackend> backend;
 };
@@ -130,7 +133,7 @@ medVtkView::medVtkView(QObject* parent): medAbstractImageView(parent),
     d->viewWidget->setEnableHiDPI(true);
     d->viewWidget->SetRenderWindow(d->renWin);
 
-    // Event filter used to know if the view is selecetd or not
+    // Event filter used to know if the view is selected or not
     d->viewWidget->installEventFilter(this);
     d->viewWidget->setFocusPolicy(Qt::ClickFocus );
     d->viewWidget->setCursor(QCursor(Qt::CrossCursor));
@@ -563,5 +566,29 @@ void medVtkView::resetCameraOnLayer(int layer)
             d->view3d->ResetCamera(arg);
         }
         this->render();
+    }
+}
+
+void medVtkView::showHistogram(bool checked)
+{
+    if (!checked)
+    {
+        if (d->transFun != nullptr)
+        {
+            d->transFun->hide();
+        }
+    }
+    else
+    {
+        if (d->transFun == nullptr)
+        {
+            d->transFun = new medClutEditorToolBox();
+            d->viewWidget->parentWidget()->layout()->addWidget(d->transFun);
+
+            d->transFun->setView(this);
+            d->transFun->setMaximumHeight(350);
+        }
+
+        d->transFun->show();
     }
 }
