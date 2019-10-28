@@ -31,10 +31,10 @@ set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 find_package(dtk REQUIRED)
 include_directories(${dtk_INCLUDE_DIRS})
 
-find_package(ITK REQUIRED)
+find_package(ITK REQUIRED COMPONENTS ITKIOImageBase ITKTransform ITKIOTransformBase ITKIOTransformInsightLegacy ITKRegistrationCommon ITKIOMeta)
 include(${ITK_USE_FILE})
 
-find_package(VTK REQUIRED)
+find_package(VTK REQUIRED COMPONENTS vtkCommonCore vtkInteractionWidgets)
 include(${VTK_USE_FILE})
 
 find_package(RPI REQUIRED)
@@ -73,9 +73,12 @@ add_library(${TARGET_NAME} SHARED
 ## Link
 ## #############################################################################
 
+#message("ITK LIBRARIES" ${ITK_LIBRARIES}) 
 target_link_libraries(${TARGET_NAME}
   ${QT_LIBRARIES}
   ${RPI_LIBRARIES}
+  ${ITK_LIBRARIES} 
+  ${VTK_LIBRARIES}
   dtkCore
   dtkLog
   medCore
