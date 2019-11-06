@@ -544,8 +544,6 @@ void vtkImageView3D::SetInput(vtkAlgorithmOutput* pi_poVtkAlgoOutput, vtkMatrix4
       cast->Update();
 
       poVtkAlgoOutputTmp = cast->GetOutputPort();
-
-      //cast->Delete();
     }
 
     this->AddLayer (layer);
@@ -965,7 +963,7 @@ unsigned int vtkImageView3D::GetCroppingMode()
 
 //----------------------------------------------------------------------------
 /**
- The wolrd is not always what we think it is ...
+ The world is not always what we think it is ...
 
  Use this method to move the viewer slice such that the position
  (in world coordinates) given by the arguments is contained by
@@ -1076,11 +1074,12 @@ void vtkImageView3D::AddLayer (int layer)
   {
     return;
   }
-  if ( static_cast<size_t>(layer) >= this->LayerInfoVec.size() ) {
+  if ( static_cast<size_t>(layer) >= this->LayerInfoVec.size() )
+  {
       this->LayerInfoVec.resize(layer + 1);
   }
 
-  // needs to instanciate objects for layers being created
+  // needs to instantiate objects for layers being created
   for ( size_t i(0); i<this->LayerInfoVec.size(); ++i )
   {
       if (!this->LayerInfoVec[i].ImageDisplay)
@@ -1096,7 +1095,7 @@ void vtkImageView3D::AddLayer (int layer)
 //----------------------------------------------------------------------------
 int vtkImageView3D::GetNumberOfLayers() const
 {
-    // I don't really know why, but LayerInfoVec size is set to 1 at initialisation time,
+    // I don't really know why, but LayerInfoVec size is set to 1 at initialization time,
     // so we need one more check to know the real number of layer
     if( this->LayerInfoVec.size() == 1)
     {
@@ -1110,20 +1109,47 @@ int vtkImageView3D::GetNumberOfLayers() const
 //----------------------------------------------------------------------------
 void vtkImageView3D::RemoveLayer (int layer)
 {
-  if (!this->HasLayer(layer))
-  {
-    return;
-  }
+    if (this->HasLayer(layer))
+    {
+        // ////////////////////////////////////////////////////////////////////////
+        // Remove layer
+        vtkRenderer *renderer = this->Renderer;
+        vtkImageView::RemoveLayer(layer);
+        std::vector<vtkActor*> vActorsBackup;
+        if (renderer)
+        {
+            renderer->RemoveAllViewProps();
+            for(int i=0; i< this->DataSetActorCollection->GetNumberOfItems(); ++i)
+            {
+                auto poWidget = vtkActor::SafeDownCast(this->DataSetActorCollection->GetItemAsObject(i));
+                poWidget->VisibilityOff();
+                vActorsBackup.push_back(poWidget);
+            }
+            if (this->GetRenderWindow())
+            {
+                this->GetRenderWindow()->RemoveRenderer(renderer);
+            }
+            this->Modified();
+        }
 
-  this->LayerInfoVec.erase (this->LayerInfoVec.begin() + layer );
+        // Delete is handled by SmartPointers.
+        this->LayerInfoVec.erase(this->LayerInfoVec.begin() + layer);
 
-  this->InternalUpdate();
 
-  if(this->LayerInfoVec.size() == 0)
-  {
-      AddLayer(0);
-      this->InternalUpdate();
-  }
+        // ////////////////////////////////////////////////////////////////////////
+        // Rebuild a layer if necessary
+        if (this->LayerInfoVec.size() == 0)
+        {
+            AddLayer(0);
+            bool bRestCam = true;
+            for (auto pActor : vActorsBackup)
+            {
+                this->Renderer->AddViewProp(pActor);
+                pActor->VisibilityOn();
+                this->Modified();
+            }
+        }
+    }    
 }
 
 //----------------------------------------------------------------------------
@@ -1146,8 +1172,7 @@ vtkImage3DDisplay * vtkImageView3D::GetImage3DDisplayForLayer( int layer ) const
   else return nullptr;
 }
 
-void vtkImageView3D::ApplyColorTransferFunction(vtkScalarsToColors * colors,
-                                                int layer)
+void vtkImageView3D::ApplyColorTransferFunction(vtkScalarsToColors * colors, int layer)
 {
   return;
 }

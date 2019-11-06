@@ -64,9 +64,11 @@ set(PLUGIN_LIST
   legacy/medMeshingWorkspace                                             ON
   legacy/medCreateMeshFromMask                                           ON
   legacy/medRemeshing                                                    ON
+  legacy/medN4BiasCorrection                                             ON
   legacy/meshMapping                                                     ON
   legacy/meshManipulation                                                ON
   legacy/iterativeClosestPoint                                           ON
+  legacy/itkFilters                                                      ON
   process/arithmetic_operation                                           ON
   process/bias_correction                                                ON
   process/dwi_basic_thresholding                                         ON
