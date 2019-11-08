@@ -55,7 +55,19 @@ list(APPEND external_projects
   DCMTK 
   QtDCM 
   dtk
-  )
+  jsoncons
+  glew
+  asio
+  websocketpp
+  eigen
+  xcom 
+  gvirtualXRay
+  qwt 
+  mmg 
+  tetgen
+  #poisson
+  #openssl
+)
 
 if (USE_DTKIMAGING)
   list(APPEND external_projects
