@@ -8,6 +8,7 @@ function(music_plugins_project)
         ITK
         VTK
         gvirtualXRay
+	qwt
         )
 
     EP_Initialisation(${external_project}
