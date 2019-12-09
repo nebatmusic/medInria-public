@@ -76,8 +76,6 @@ add_library(${TARGET_NAME} SHARED
 target_link_libraries(${TARGET_NAME}
   ${QT_LIBRARIES}
   ${RPI_LIBRARIES}
-  ${ITK_LIBRARIES} 
-  ${VTK_LIBRARIES}
   dtkCore
   dtkLog
   medCore
