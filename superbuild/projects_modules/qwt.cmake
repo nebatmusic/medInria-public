@@ -72,7 +72,6 @@ ExternalProject_Add(${ep}
   CMAKE_GENERATOR_PLATFORM ${CMAKE_GENERATOR_PLATFORM}
   CMAKE_ARGS ${cmake_args}
   DEPENDS ${${ep}_dependencies}
-  #PATCH_COMMAND ${QWT_PATCH_COMMAND}
   CONFIGURE_COMMAND  mkdir -p ${EP_PATH_SOURCE}/../build/${ep} && cd ${EP_PATH_SOURCE}/../build/${ep}   && ${QT_QMAKE_EXECUTABLE} ${SPEC} <SOURCE_DIR>/qwt.pro
   BUILD_COMMAND cd ${EP_PATH_SOURCE}/../build/${ep} && make sub-src    
   UPDATE_COMMAND ""
