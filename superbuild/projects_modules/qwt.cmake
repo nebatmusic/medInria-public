@@ -63,7 +63,7 @@ ep_GeneratePatchCommand(${ep} QWT_PATCH_COMMAND qwt-6.3.patch)
 
 ExternalProject_Add(${ep}
   PREFIX ${EP_PATH_SOURCE}
-  SOURCE_DIR ${EP_PATH_SOURCE}/${ep}/qwt
+  SOURCE_DIR ${EP_PATH_SOURCE}/${ep}
   TMP_DIR ${tmp_path}
   STAMP_DIR ${stamp_path}
   GIT_REPOSITORY ${git_url}
@@ -72,7 +72,8 @@ ExternalProject_Add(${ep}
   CMAKE_GENERATOR_PLATFORM ${CMAKE_GENERATOR_PLATFORM}
   CMAKE_ARGS ${cmake_args}
   DEPENDS ${${ep}_dependencies}
-  CONFIGURE_COMMAND  mkdir -p ${EP_PATH_SOURCE}/../build/${ep} && cd ${EP_PATH_SOURCE}/../build/${ep}   && ${QT_QMAKE_EXECUTABLE} ${SPEC} <SOURCE_DIR>/qwt.pro
+  PATCH_COMMAND ${QWT_PATCH_COMMAND}
+  CONFIGURE_COMMAND  mkdir -p ${EP_PATH_SOURCE}/../build/${ep} && cd ${EP_PATH_SOURCE}/../build/${ep}   && ${QT_QMAKE_EXECUTABLE} ${SPEC} <SOURCE_DIR>/qwt/qwt.pro
   BUILD_COMMAND cd ${EP_PATH_SOURCE}/../build/${ep} && make sub-src    
   UPDATE_COMMAND ""
   INSTALL_COMMAND ""
