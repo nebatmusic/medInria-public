@@ -83,19 +83,21 @@ if(APPLE)
 endif(APPLE)
 
 set(patch_dir ${EP_PATH_SOURCE}/../../medInria-public/superbuild/patches)
-set(source_dir ${EP_PATH_SOURCE}/gvxr)
 set(build_dir ${EP_PATH_SOURCE}/../build/gvxr)
+
+set(all_source_dir ${EP_PATH_SOURCE}/gVirtualXRay-1.1.0)
+set(source_dir ${all_source_dir}/gvxr)
 
 ExternalProject_Add(gvirtualXRay
   PREFIX ${EP_PATH_SOURCE}
-  SOURCE_DIR ${EP_PATH_SOURCE}/${ep}
+  SOURCE_DIR ${source_dir}
   CMAKE_GENERATOR ${gen}
   CMAKE_GENERATOR_PLATFORM ${CMAKE_GENERATOR_PLATFORM}
   CMAKE_ARGS ${cmake_args}
   DEPENDS ${${ep}_dependencies}
   DOWNLOAD_COMMAND curl -Lo gVirtualXRay-1.1.0.zip https://sourceforge.net/projects/gvirtualxray/files/1.1/gVirtualXRay-1.1.0-Source.zip/download
   DOWNLOAD_NAME   gVirtualXRay-1.1.0.zip
-  PATCH_COMMAND   unzip   ${EP_PATH_SOURCE}/src/gVirtualXRay-1.1.0.zip -d ${EP_PATH_SOURCE}/
+  PATCH_COMMAND  mkdir -p ${all_source_dir}  && unzip   ${EP_PATH_SOURCE}/src/gVirtualXRay-1.1.0.zip -d ${all_source_dir}
   CONFIGURE_COMMAND mkdir -p ${build_dir} && cd ${build_dir} && cmake  ${cmake_args} ${source_dir}
   BUILD_COMMAND  cd ${build_dir} && make install
   INSTALL_COMMAND ""
@@ -110,5 +112,3 @@ set(${ep}_DIR ${binary_dir} PARENT_SCOPE)
 endif() #NOT USE_SYSTEM_ep
 
 endfunction()
-
-
