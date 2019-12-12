@@ -11,6 +11,7 @@ function(music_plugins_liryc_project)
             dtk
             ITK
             VTK
+	    qwt
             )
 
         EP_Initialisation(${external_project}

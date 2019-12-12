@@ -44,7 +44,7 @@ endif(WIN32)
 
 get_target_property (QT_QMAKE_EXECUTABLE Qt5::qmake IMPORTED_LOCATION)
 
-set(QWT_INSTALL_PREFIX ${EP_PATH_SOURCE}/../build/qwt)
+set(QWT_INSTALL_PREFIX ${EP_PATH_SOURCE}/../build/${ep})
 
 set(cmake_args
   ${ep_common_cache_args}
@@ -52,9 +52,8 @@ set(cmake_args
   -DCMAKE_C_FLAGS=${${ep}_c_flags}
   -DCMAKE_CXX_FLAGS=${${ep}_cxx_flags}
   -DCMAKE_SHARED_LINKER_FLAGS:STRING=${${ep}_shared_linker_flags}
-  -DCMAKE_INSTALL_PREFIX:PATH=${EP_PATH_SOURCE}/../build/qwt 
+  -DCMAKE_INSTALL_PREFIX:PATH=${EP_PATH_SOURCE}/../build/${ep} 
   -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
-  
   )
 
 ep_GeneratePatchCommand(${ep} QWT_PATCH_COMMAND qwt-6.3.patch)
@@ -66,8 +65,7 @@ epComputPath(${ep})
 
 ExternalProject_Add(${ep}
   PREFIX ${EP_PATH_SOURCE}
-  SOURCE_DIR ${EP_PATH_SOURCE}/${ep}
-
+  SOURCE_DIR ${EP_PATH_SOURCE}/${ep}/qwt
   BINARY_DIR ${build_path}
   TMP_DIR ${tmp_path}
   STAMP_DIR ${stamp_path}
@@ -80,7 +78,7 @@ ExternalProject_Add(${ep}
   DEPENDS ${${ep}_dependencies}
   PATCH_COMMAND ${QWT_PATCH_COMMAND}
  
-  CONFIGURE_COMMAND  cd ${build_path} && ${QT_QMAKE_EXECUTABLE} ${SPEC} <SOURCE_DIR>/qwt/qwt.pro
+  CONFIGURE_COMMAND  cd ${build_path} && ${QT_QMAKE_EXECUTABLE} ${SPEC} <SOURCE_DIR>/qwt.pro
  
   BUILD_COMMAND cd ${build_path} && make sub-src    
   UPDATE_COMMAND ""
