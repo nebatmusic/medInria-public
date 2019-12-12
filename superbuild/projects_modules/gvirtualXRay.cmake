@@ -38,15 +38,18 @@ if (UNIX OR APPLE)
   set(${ep}_cxx_flags "${${ep}_cxx_flags}")
 endif()
 
+message( ExternalProject_Get_Property(${TARGET_NAME} install_dir))
+
 set(cmake_args
   ${ep_common_cache_args}
-  -DCMAKE_C_FLAGS:STRING=${${ep}_c_flags}
-  -DCMAKE_CXX_FLAGS:STRING=${${ep}_cxx_flags}
-  -DCMAKE_SHARED_LINKER_FLAGS:STRING=${${ep}_shared_linker_flags}
+  -DCMAKE_C_FLAGS=${${ep}_c_flags}
+  -DCMAKE_CXX_FLAGS=${${ep}_cxx_flags}
+  -DCMAKE_SHARED_LINKER_FLAGS=${${ep}_shared_linker_flags}
   -DBUILD_TUTORIALS:bool=OFF
   -DBUILD_EXAMPLES:bool=OFF
   -DUSE_ITK:bool=OFF
-  -DCMAKE_INSTALL_PREFIX:PATH=${EP_PATH_SOURCE}/../build/gvxr/
+  -DCMAKE_INSTALL_PREFIX:PATH=${EP_PATH_SOURCE}/../build/${ep}
+ 
   -DUSE_SYSTEM_ZLIB:bool=ON
   -DUSE_SYSTEM_LIBTIFF:bool=OFF
   -DUSE_LIBTIFF:bool=OFF
@@ -83,23 +86,28 @@ if(APPLE)
 endif(APPLE)
 
 set(patch_dir ${EP_PATH_SOURCE}/../../medInria-public/superbuild/patches)
-set(build_dir ${EP_PATH_SOURCE}/../build/gvxr)
 
-set(all_source_dir ${EP_PATH_SOURCE}/gVirtualXRay-1.1.0)
-set(source_dir ${all_source_dir}/gvxr)
+set(source_dir ${EP_PATH_SOURCE}/${ep})
 
-ExternalProject_Add(gvirtualXRay
+epComputPath(${ep})
+
+ExternalProject_Add(${ep}
   PREFIX ${EP_PATH_SOURCE}
   SOURCE_DIR ${source_dir}
+
+  BINARY_DIR ${build_path}
+  TMP_DIR ${tmp_path}
+  STAMP_DIR ${stamp_path} 
+  
   CMAKE_GENERATOR ${gen}
   CMAKE_GENERATOR_PLATFORM ${CMAKE_GENERATOR_PLATFORM}
   CMAKE_ARGS ${cmake_args}
   DEPENDS ${${ep}_dependencies}
   DOWNLOAD_COMMAND curl -Lo gVirtualXRay-1.1.0.zip https://sourceforge.net/projects/gvirtualxray/files/1.1/gVirtualXRay-1.1.0-Source.zip/download
   DOWNLOAD_NAME   gVirtualXRay-1.1.0.zip
-  PATCH_COMMAND  mkdir -p ${all_source_dir}  && unzip   ${EP_PATH_SOURCE}/src/gVirtualXRay-1.1.0.zip -d ${all_source_dir}
-  CONFIGURE_COMMAND mkdir -p ${build_dir} && cd ${build_dir} && cmake  ${cmake_args} ${source_dir}
-  BUILD_COMMAND  cd ${build_dir} && make install
+  PATCH_COMMAND  unzip  ${EP_PATH_SOURCE}/src/gVirtualXRay-1.1.0.zip -d ${source_dir}
+  CONFIGURE_COMMAND cd ${build_path} && cmake  ${cmake_args} ${source_dir}/gvxr
+  BUILD_COMMAND  cd ${build_path} && make install
   INSTALL_COMMAND ""
   UPDATE_COMMAND ""
 )
@@ -107,6 +115,8 @@ ExternalProject_Add(gvirtualXRay
 ## Set variable to provide infos about the project
 ## #############################################################################
 ExternalProject_Get_Property(${ep} binary_dir)
+
+
 set(${ep}_DIR ${binary_dir} PARENT_SCOPE)
 
 endif() #NOT USE_SYSTEM_ep

@@ -2,7 +2,7 @@ function(music_plugins_liryc_project)
 
     set(external_project music-plugins-liryc)
 
-    option(USE_${external_project} "Use ${external_project}" OFF)
+    option(USE_${external_project} "Use ${external_project}" ON)
 
     if (USE_${external_project})
 
