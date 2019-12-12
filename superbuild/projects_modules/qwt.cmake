@@ -79,7 +79,6 @@ ExternalProject_Add(${ep}
   CMAKE_ARGS ${cmake_args}
   DEPENDS ${${ep}_dependencies}
   PATCH_COMMAND ${QWT_PATCH_COMMAND}
-  #CONFIGURE_COMMAND  mkdir -p ${EP_PATH_SOURCE}/../build/${ep} && cd ${EP_PATH_SOURCE}/../build/${ep}   && ${QT_QMAKE_EXECUTABLE} ${SPEC} <SOURCE_DIR>/qwt/qwt.pro
  
   CONFIGURE_COMMAND  cd ${build_path} && ${QT_QMAKE_EXECUTABLE} ${SPEC} <SOURCE_DIR>/qwt/qwt.pro
  

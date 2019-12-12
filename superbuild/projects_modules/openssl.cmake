@@ -58,7 +58,6 @@ endif(APPLE)
 ## Add external-project
 ## #############################################################################
 set(source_dir ${EP_PATH_SOURCE}/openssl)
-#set(build_dir ${EP_PATH_SOURCE}/../build/openssl)
 
 epComputPath(${ep})
 
@@ -75,9 +74,6 @@ ExternalProject_Add(${ep}
   CMAKE_GENERATOR_PLATFORM ${CMAKE_GENERATOR_PLATFORM}
   CMAKE_ARGS ${cmake_args}
   DEPENDS ${${ep}_dependencies}
-
-  #CONFIGURE_COMMAND  mkdir ${build_dir} && cd  ${source_dir} &&  
-  #                  ./config no-zlib  shared --prefix=${build_dir}  --openssldir=${build_dir} 
 
   CONFIGURE_COMMAND  cd  ${source_dir} &&  ./config no-zlib  shared --prefix=${build_path}  --openssldir=${build_path} 
   BUILD_COMMAND cd ${source_dir} &&  make install  ## might have to put 
