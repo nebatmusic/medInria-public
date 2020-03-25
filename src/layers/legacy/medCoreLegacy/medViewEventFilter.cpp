@@ -98,6 +98,16 @@ bool medViewEventFilter::mouseMoveEvent( medAbstractView *view, QMouseEvent *mou
     return false;
 }
 
+bool medViewEventFilter::mouseWheelEvent( medAbstractView *view, QMouseEvent *mouseEvent )
+{
+    return false;
+}
+
+bool medViewEventFilter::mouseWheelEvent( medAbstractView *view, QGraphicsSceneMouseEvent *mouseEvent )
+{
+    return false;
+}
+
 //! Override QObject
 bool medViewEventFilter::eventFilter( QObject *obj, QEvent *event )
 {
