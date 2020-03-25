@@ -2,7 +2,7 @@
 
  medInria
 
- Copyright (c) INRIA 2013 - 2018. All rights reserved.
+ Copyright (c) INRIA 2013 - 2019. All rights reserved.
  See LICENSE.txt for details.
 
   This software is distributed WITHOUT ANY WARRANTY; without even
@@ -76,11 +76,9 @@ public slots:
     void update(const medDataIndex&);
 
 private:
-    void updateSerie(const medDataIndex&);
+    void updateSeries(const medDataIndex&);
     void updateStudy(const medDataIndex&, bool updateChildren = true);
     void updatePatient(const medDataIndex&, bool updateChildren = true);
     QVariant convertQStringToQVariant(QString key, QString value);
     void changePersistenIndexAndSubIndex(QModelIndex index);
 };
-
-

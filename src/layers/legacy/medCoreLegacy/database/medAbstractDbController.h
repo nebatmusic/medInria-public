@@ -2,7 +2,7 @@
 
  medInria
 
- Copyright (c) INRIA 2013 - 2018. All rights reserved.
+ Copyright (c) INRIA 2013 - 2019. All rights reserved.
  See LICENSE.txt for details.
 
   This software is distributed WITHOUT ANY WARRANTY; without even
@@ -35,7 +35,6 @@ public:
     virtual QList<medDataIndex> patients() const = 0;
     virtual QList<medDataIndex> studies(const medDataIndex& index ) const = 0;
     virtual QList<medDataIndex> series(const medDataIndex& index) const = 0;
-    virtual QList<medDataIndex> images(const medDataIndex& index) const = 0;
 
     virtual QPixmap thumbnail(const medDataIndex& index) const = 0;
 
@@ -61,5 +60,5 @@ public slots:
     virtual bool contains(const medDataIndex& index) const = 0;
 
     virtual QList<medDataIndex> moveStudy(const medDataIndex& indexStudy, const medDataIndex& toPatient) =  0;
-    virtual medDataIndex moveSerie(const medDataIndex& indexSerie, const medDataIndex& toStudy) =  0;
+    virtual medDataIndex moveSeries(const medDataIndex& indexSeries, const medDataIndex& toStudy) =  0;
 };

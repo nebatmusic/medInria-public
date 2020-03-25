@@ -2,7 +2,7 @@
 
  medInria
 
- Copyright (c) INRIA 2013 - 2018. All rights reserved.
+ Copyright (c) INRIA 2013 - 2019. All rights reserved.
  See LICENSE.txt for details.
 
   This software is distributed WITHOUT ANY WARRANTY; without even
@@ -11,21 +11,20 @@
 
 =========================================================================*/
 
-#include <medDatabaseRemover.h>
-
-#include <QSqlError>
-
 #include <dtkCoreSupport/dtkAbstractDataReader.h>
 #include <dtkCoreSupport/dtkAbstractDataWriter.h>
 #include <dtkCoreSupport/dtkGlobal.h>
 #include <dtkLog/dtkLog.h>
 
+#include <QSqlError>
+
 #include <medAbstractData.h>
 #include <medAbstractDataFactory.h>
 #include <medAbstractImageData.h>
+#include <medDatabaseController.h>
+#include <medDatabaseRemover.h>
 #include <medDataIndex.h>
 #include <medDataManager.h>
-#include <medDatabaseController.h>
 #include <medStorage.h>
 
 class medDatabaseRemoverPrivate
@@ -36,7 +35,6 @@ public:
     static const QString T_PATIENT;
     static const QString T_STUDY;
     static const QString T_SERIES;
-    static const QString T_IMAGE;
 
     bool isCancelled;
 };
@@ -44,7 +42,6 @@ public:
 const QString medDatabaseRemoverPrivate::T_PATIENT = "patient";
 const QString medDatabaseRemoverPrivate::T_STUDY = "study";
 const QString medDatabaseRemoverPrivate::T_SERIES = "series";
-const QString medDatabaseRemoverPrivate::T_IMAGE = "image";
 
 medDatabaseRemover::medDatabaseRemover ( const medDataIndex &index_ ) : medJobItemL(), d ( new medDatabaseRemoverPrivate )
 {
@@ -56,8 +53,7 @@ medDatabaseRemover::medDatabaseRemover ( const medDataIndex &index_ ) : medJobIt
 medDatabaseRemover::~medDatabaseRemover()
 {
     delete d;
-
-    d = NULL;
+    d = nullptr;
 }
 
 void medDatabaseRemover::internalRun()
@@ -65,6 +61,7 @@ void medDatabaseRemover::internalRun()
     QSqlDatabase db( d->db );
     QSqlQuery ptQuery ( db );
 
+    // Is Patient
     const medDataIndex index = d->index;
     if ( index.isValidForPatient() )
     {
@@ -85,6 +82,7 @@ void medDatabaseRemover::internalRun()
         int patientDbId = ptQuery.value ( 0 ).toInt();
         QSqlQuery stQuery ( db );
 
+        // Is Study
         if ( index.isValidForStudy() )
         {
             stQuery.prepare ( "SELECT id FROM " + d->T_STUDY + " WHERE id = :id AND patient = :patient" );
@@ -105,6 +103,7 @@ void medDatabaseRemover::internalRun()
             int studyDbId = stQuery.value ( 0 ).toInt();
             QSqlQuery seQuery ( db );
 
+            // Is Series
             if ( index.isValidForSeries() )
             {
                 seQuery.prepare ( "SELECT id FROM " + d->T_SERIES + " WHERE id = :id AND study = :study" );
@@ -123,44 +122,29 @@ void medDatabaseRemover::internalRun()
                     break;
 
                 int seriesDbId = seQuery.value ( 0 ).toInt();
-                QSqlQuery imQuery ( db );
 
-                if ( index.isValidForImage() )
-                {
-                    imQuery.prepare ( "SELECT id FROM " + d->T_IMAGE + " WHERE id = :id AND series = :seriesId" );
-                    imQuery.bindValue ( ":id", index.imageId() );
-                }
-                else
-                {
-                    imQuery.prepare ( "SELECT id FROM " + d->T_IMAGE + " WHERE series = :series" );
-                }
-                imQuery.bindValue ( ":series", seriesDbId );
+                // Remove Series
+                this->removeSeries ( patientDbId, studyDbId, seriesDbId );
 
-                EXEC_QUERY ( imQuery );
-
-                imQuery.last();
-                double nbImage = imQuery.at();
-                imQuery.first();
-
-                do
-                {
-                    int imageId = imQuery.value ( 0 ).toInt();
-                    this->removeImage ( patientDbId, studyDbId, seriesDbId, imageId );
-                    emit progress (this, imQuery.at() / nbImage * 100 );
-                }
-                while ( imQuery.next() );
-                if ( this->isSeriesEmpty ( seriesDbId ) )
-                    this->removeSeries ( patientDbId, studyDbId, seriesDbId );
-
+                emit progress (this, 50 );
             } // seQuery.next
+
+            // After removal of series, test if study is empty, and remove it if it is
             if ( this->isStudyEmpty ( studyDbId ) )
+            {
                 this->removeStudy ( patientDbId, studyDbId );
+            }
 
         } // stQuery.next
+
+        // After removal of study, test if patient is empty, and remove it if it is
         if ( this->isPatientEmpty ( patientDbId ) )
+        {
             this->removePatient ( patientDbId );
+        }
 
     } // ptQuery.next
+    emit progress (this, 100 );
 
     if ( d->isCancelled )
         emit failure ( this );
@@ -168,33 +152,6 @@ void medDatabaseRemover::internalRun()
         emit success ( this );
 
     return;
-}
-
-void medDatabaseRemover::removeImage ( int patientDbId, int studyDbId, int seriesDbId, int imageId )
-{
-    QSqlDatabase db(d->db);
-    QSqlQuery query ( db );
-
-    query.prepare ( "SELECT thumbnail FROM " + d->T_IMAGE + " WHERE id = :imageId " );
-    query.bindValue ( ":id", imageId );
-    EXEC_QUERY ( query );
-    if ( query.next() )
-    {
-        QString thumbnail = query.value ( 0 ).toString();
-        this->removeFile ( thumbnail );
-    }
-    removeTableRow ( d->T_IMAGE, imageId );
-}
-
-bool medDatabaseRemover::isSeriesEmpty ( int seriesDbId )
-{
-    QSqlDatabase db(d->db);
-    QSqlQuery query ( db );
-
-    query.prepare ( "SELECT id FROM " + d->T_IMAGE + " WHERE series = :series " );
-    query.bindValue ( ":series", seriesDbId );
-    EXEC_QUERY ( query );
-    return !query.next();
 }
 
 void medDatabaseRemover::removeSeries ( int patientDbId, int studyDbId, int seriesDbId )
@@ -212,13 +169,14 @@ void medDatabaseRemover::removeSeries ( int patientDbId, int studyDbId, int seri
 
         // if path is empty then it was an indexed series
         if ( !path.isNull() && !path.isEmpty() )
-            this->removeDataFile ( medDataIndex::makeSeriesIndex ( d->index.dataSourceId(), patientDbId, studyDbId, seriesDbId ) , path );
-
+        {
+            this->removeDataFile(path);
+        }
         removeThumbnailIfNeeded(query);
     }
 
     if( removeTableRow ( d->T_SERIES, seriesDbId ) )
-        emit removed(medDataIndex(1, patientDbId, studyDbId, seriesDbId, -1));
+        emit removed(medDataIndex(1, patientDbId, studyDbId, seriesDbId));
 }
 
 bool medDatabaseRemover::isStudyEmpty ( int studyDbId )
@@ -252,7 +210,7 @@ void medDatabaseRemover::removeStudy ( int patientDbId, int studyDbId )
     }
 
     if( removeTableRow ( d->T_STUDY, studyDbId ) )
-        emit removed(medDataIndex(1, patientDbId, studyDbId, -1, -1));
+        emit removed(medDataIndex(1, patientDbId, studyDbId, -1));
 }
 
 bool medDatabaseRemover::isPatientEmpty ( int patientDbId )
@@ -278,18 +236,11 @@ void medDatabaseRemover::removePatient ( int patientDbId )
     EXEC_QUERY ( query );
     if ( query.next() )
     {
-        QString thumbnail = query.value ( 0 ).toString();
-        this->removeFile ( thumbnail );
+        removeThumbnailIfNeeded(query);
         patientId = query.value ( 1 ).toString();
     }
     if( removeTableRow ( d->T_PATIENT, patientDbId ) )
-        emit removed(medDataIndex(1, patientDbId, -1, -1, -1));
-
-    medDatabaseController * dbi = medDatabaseController::instance();
-    QDir patientDir ( medStorage::dataLocation() + "/" + dbi->stringForPath ( patientId ) );
-
-    if ( patientDir.exists() )
-        patientDir.rmdir ( patientDir.path() ); // only removes if empty
+        emit removed(medDataIndex(1, patientDbId, -1, -1));
 }
 
 bool medDatabaseRemover::removeTableRow ( const QString &table, int id )
@@ -322,7 +273,7 @@ void medDatabaseRemover::removeThumbnailIfNeeded(QSqlQuery query)
     {
         bool res = seriesFi.dir().rmdir ( seriesFi.absolutePath() ); // only removes if empty
 
-        // the serie's directory has been deleted, let's check if the patient directory is empty
+        // the series's directory has been deleted, let's check if the patient directory is empty
         // this can happen after moving series
         if(res)
         {
@@ -343,7 +294,7 @@ void medDatabaseRemover::onCancel ( QObject* )
 }
 
 //! Remove a data image file. Includes special cases for some file types.
-void medDatabaseRemover::removeDataFile ( const medDataIndex &index, const QString & filename )
+void medDatabaseRemover::removeDataFile(const QString & filename)
 {
     QFileInfo fi ( filename );
     const QString suffix = fi.suffix();

@@ -2,7 +2,7 @@
 
  medInria
 
- Copyright (c) INRIA 2013 - 2018. All rights reserved.
+ Copyright (c) INRIA 2013 - 2019. All rights reserved.
  See LICENSE.txt for details.
 
   This software is distributed WITHOUT ANY WARRANTY; without even
@@ -19,10 +19,9 @@
 #include <dtkCoreSupport/dtkSmartPointer.h>
 
 #include <medAbstractData.h>
-#include <medJobItemL.h>
-#include <medDataIndex.h>
-
 #include <medCoreLegacyExport.h>
+#include <medDataIndex.h>
+#include <medJobItemL.h>
 
 class medAbstractDatabaseImporterPrivate;
 class medAbstractData;
@@ -48,7 +47,6 @@ public:
 
     ~medAbstractDatabaseImporter ( void );
 
-
 signals:
     /**
      * This signal is emitted after a successful import/index.
@@ -66,7 +64,6 @@ signals:
 
 public slots:
     void onCancel ( QObject* );
-
 
 protected:
     virtual void internalRun ( void ) ;
@@ -93,11 +90,10 @@ protected:
     QString determineFutureImageExtensionByDataType ( const medAbstractData* medData );
 
     QString generateUniqueVolumeId ( const medAbstractData* medData );
-    QStringList generateThumbnails ( medAbstractData* medData, QString pathToStoreThumbnails );
+    QString generateThumbnail(medAbstractData* medData, QString pathToStoreThumbnail );
 
     void importData();
     void importFile();
-
 
     /**
     * Finds if parameter @seriesName is already being used in the database
@@ -107,15 +103,6 @@ protected:
     * @return newSeriesName - a new, unused, series name
     **/
     virtual QString ensureUniqueSeriesName ( const QString seriesName ) = 0;
-
-    /**
-    * Checks if the image which was used to create the medData object
-    * passed as parameter already exists in the database
-    * @param medData - a @medAbstractData object created from the original image
-    * @param imageName - the name of the image we are looking for
-    * @return true if already exists, false otherwise
-    **/
-    virtual bool checkIfExists ( medAbstractData* medData, QString imageName ) = 0;
 
     /**
      * Retrieves patientID. Checks if patient is already in the database
@@ -131,12 +118,5 @@ protected:
     **/
     virtual medDataIndex populateDatabaseAndGenerateThumbnails ( medAbstractData* medData, QString pathToStoreThumbnails ) = 0;
 
-
-
-
     medAbstractDatabaseImporterPrivate *d;
-
-
 };
-
-

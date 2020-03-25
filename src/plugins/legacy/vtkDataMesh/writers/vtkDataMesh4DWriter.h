@@ -2,7 +2,7 @@
 
  medInria
 
- Copyright (c) INRIA 2013 - 2018. All rights reserved.
+ Copyright (c) INRIA 2013 - 2020. All rights reserved.
  See LICENSE.txt for details.
  
   This software is distributed WITHOUT ANY WARRANTY; without even
@@ -14,8 +14,7 @@
 #pragma once
 
 #include "vtkDataMeshPluginExport.h"
-
-#include <dtkCoreSupport/dtkAbstractDataWriter.h>
+#include "vtkDataMeshWriterBase.h"
 
 class vtkDataManagerWriter;
 
@@ -38,34 +37,32 @@ class vtkDataManagerWriter;
 */
 
 
-class VTKDATAMESHPLUGIN_EXPORT vtkDataMesh4DWriter : public dtkAbstractDataWriter
+class VTKDATAMESHPLUGIN_EXPORT vtkDataMesh4DWriter : public vtkDataMeshWriterBase
 {
     Q_OBJECT
 
 public:
-             vtkDataMesh4DWriter();
-    virtual ~vtkDataMesh4DWriter();
+    vtkDataMesh4DWriter();
+    ~vtkDataMesh4DWriter() override;
 
-    virtual QStringList handled() const;
+    QStringList handled() const override;
     static  QStringList s_handled();
 
-
-    virtual QString description() const;
-    virtual QString identifier() const;
+    QString description() const override;
+    QString identifier() const override;
 
     static bool registered();
 
-    virtual QStringList supportedFileExtensions(void) const;
+    QStringList supportedFileExtensions(void) const override;
 
 public slots:
-    bool write    (const QString& path);
-    bool canWrite (const QString& path);
+    bool write (const QString& path);
 
  protected:
     vtkDataManagerWriter* writer;
 
 private:
-        static const char ID[];
+    static const char ID[];
 };
 
 

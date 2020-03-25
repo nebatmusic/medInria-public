@@ -68,8 +68,6 @@ void forceShow(medMainWindow& mainwindow )
 
 int main(int argc,char* argv[])
 {
-    qRegisterMetaType<medDataIndex>("medDataIndex");
-
     // Setup openGL surface compatible with QVTKOpenGLWidget,
     // required by medVtkView
     QSurfaceFormat fmt;
@@ -97,12 +95,16 @@ int main(int argc,char* argv[])
     setlocale(LC_NUMERIC, "C");
     QLocale::setDefault(QLocale("C"));
 
-    if (dtkApplicationArgumentsContain(&application, "-h") || dtkApplicationArgumentsContain(&application, "--help")) {
-        qDebug() << "Usage: medInria [--fullscreen|--no-fullscreen] [--stereo] "
-        #ifdef ACTIVATE_WALL_OPTION
-        "[--wall] [--tracker=URL] "
-        #endif
-        "[--view] [files]]";
+    if (dtkApplicationArgumentsContain(&application, "-h") || dtkApplicationArgumentsContain(&application, "--help"))
+    {
+        qDebug() << "Usage: medInria "
+                    "[--fullscreen|--no-fullscreen] "
+                    "[--stereo] "
+                    "[--debug] "
+            #ifdef ACTIVATE_WALL_OPTION
+                    "[[--wall] [--tracker=URL]] "
+            #endif
+                    "[[--view] [files]]";
         return 1;
     }
 
@@ -119,21 +121,32 @@ int main(int argc,char* argv[])
     medSettingsManager* mnger = medSettingsManager::instance();
 
     QStringList posargs;
-    for (int i=1;i<application.arguments().size();++i) {
+    for (int i=1;i<application.arguments().size();++i)
+    {
         const QString arg = application.arguments().at(i);
-        if (arg.startsWith("--")) {
+        if (arg.startsWith("--"))
+        {
             bool valid_option = false;
-            const QStringList options = (QStringList()
-                    << "--fullscreen"
-                    << "--no-fullscreen"
-                    << "--wall"
-                    << "--tracker"
-                    << "--stereo"
-                    << "--view");
+            const QStringList options =
+                    (QStringList()
+                     << "--fullscreen"
+                     << "--no-fullscreen"
+                     << "--wall"
+                     << "--tracker"
+                     << "--stereo"
+                     << "--view"
+                     << "--debug");
             for (QStringList::const_iterator opt=options.constBegin();opt!=options.constEnd();++opt)
+            {
                 if (arg.startsWith(*opt))
+                {
                     valid_option = true;
-            if (!valid_option) { qDebug() << "Ignoring unknown option " << arg; }
+                }
+            }
+            if (!valid_option)
+            {
+                qDebug() << "Ignoring unknown option " << arg;
+            }
             continue;
         }
         posargs.append(arg);

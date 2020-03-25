@@ -172,22 +172,26 @@ void qtdcmDataSource::initWidgets()
 
         d->mainWidget->layout()->setContentsMargins(0,0,0,0);
 
-        QObject::connect ( QtDcmManager::instance(), SIGNAL ( serieMoved ( QString ) ), this, SLOT ( onSerieMoved ( QString ) ) );
+        QObject::connect ( QtDcmManager::instance(), SIGNAL ( importFinished ( QString ) ), this, SLOT ( onImportFinished ( QString ) ) );
 
-//        d->localDicomSettingsWidget->setPreferences ( QtDcmPreferences::instance() );
-//        d->serversSettingsToolBox->getServersDicomSettingsWidget()->setPreferences(QtDcmPreferences::instance());
+        d->localDicomSettingsWidget->readPreferences();
+        d->serversSettingsToolBox->getServersDicomSettingsWidget()->readPreferences();
     }
 }
 
-void qtdcmDataSource::onSerieMoved ( QString directory )
+void qtdcmDataSource::onImportFinished ( QString directory )
 {
+    qDebug() << "Series moved !";
     emit dataToImportReceived ( directory );
 }
 
 void qtdcmDataSource::onSaveLocalSettings()
 {
     if ( d->localDicomSettingsWidget )
+    {
         d->localDicomSettingsWidget->updatePreferences();
+        QtDcmPreferences::instance()->writeSettings();
+    }
 }
 
 

@@ -2,7 +2,7 @@
 
  medInria
 
- Copyright (c) INRIA 2013 - 2018. All rights reserved.
+ Copyright (c) INRIA 2013 - 2019. All rights reserved.
  See LICENSE.txt for details.
 
   This software is distributed WITHOUT ANY WARRANTY; without even
@@ -12,7 +12,6 @@
 =========================================================================*/
 
 #pragma once
-
 
 #include <QObject>
 #include <QPixmap>
@@ -26,7 +25,6 @@ class medDataManagerPrivate;
 class medAbstractData;
 class medAbstractDbController;
 class dtkAbstractDataWriter;
-
 
 class MEDCORELEGACY_EXPORT medDataManager : public QObject
 {
@@ -60,7 +58,7 @@ public:
     // ------------------------- To be moved elsewhere -----------------------
 
     QList<medDataIndex> moveStudy(const medDataIndex& indexStudy, const medDataIndex& toPatient);
-    medDataIndex moveSerie(const medDataIndex& indexSerie, const medDataIndex& toStudy);
+    medDataIndex moveSeries(const medDataIndex& indexSeries, const medDataIndex& toStudy);
 
     // ------------------------- Compatibility code, to be removed -----------
 

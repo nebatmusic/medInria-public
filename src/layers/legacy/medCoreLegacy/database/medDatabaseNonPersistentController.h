@@ -2,7 +2,7 @@
 
  medInria
 
- Copyright (c) INRIA 2013 - 2018. All rights reserved.
+ Copyright (c) INRIA 2013 - 2019. All rights reserved.
  See LICENSE.txt for details.
 
   This software is distributed WITHOUT ANY WARRANTY; without even
@@ -13,19 +13,17 @@
 
 #pragma once
 
-#include <medAbstractDbController.h>
-#include <medDataIndex.h>
-
 #include <QtCore/QObject>
 #include <QtCore/QList>
 
+#include <medAbstractDbController.h>
 #include <medCoreLegacyExport.h>
+#include <medDataIndex.h>
 
 class medAbstractData;
 class medDatabaseNonPersistentItem;
 class medDatabaseNonPersistentControllerPrivate;
 class medImportJobWatcher;
-
 
 class MEDCORELEGACY_EXPORT medDatabaseNonPersistentController: public medAbstractDbController
 {
@@ -38,7 +36,6 @@ public:
     int patientId(bool increment=false);
     int   studyId(bool increment=false);
     int  seriesId(bool increment=false);
-    int   imageId(bool increment=false);
 
     int nonPersistentDataStartingIndex() const;
 
@@ -56,7 +53,6 @@ public:
     virtual QList<medDataIndex> patients() const;
     virtual QList<medDataIndex> studies(const medDataIndex& index ) const;
     virtual QList<medDataIndex> series(const medDataIndex& index ) const;
-    virtual QList<medDataIndex> images(const medDataIndex& index ) const;
 
     virtual QPixmap thumbnail(const medDataIndex &index) const;
 
@@ -74,7 +70,7 @@ public slots:
 
     QList<medDataIndex> moveStudy(const medDataIndex& indexStudy, const medDataIndex& toPatient);
 
-    medDataIndex moveSerie(const medDataIndex& indexSerie, const medDataIndex& toStudy);
+    medDataIndex moveSeries(const medDataIndex& indexSeries, const medDataIndex& toStudy);
 
     bool contains( const medDataIndex& index) const;
 
@@ -86,5 +82,3 @@ private:
     medDatabaseNonPersistentControllerPrivate *d;
     static medDatabaseNonPersistentController* s_instance;
 };
-
-

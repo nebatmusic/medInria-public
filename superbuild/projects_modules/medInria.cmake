@@ -54,7 +54,7 @@ if (NOT USE_SYSTEM_${ep})
 # set compilation flags
 if (UNIX)
   set(${ep}_c_flags "${${ep}_c_flags} -Wall")
-  set(${ep}_cxx_flags "${${ep}_cxx_flags} -Wall")
+  set(${ep}_cxx_flags "${${ep}_cxx_flags} -Wall -Wno-unknown-pragmas")
 endif()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -90,19 +90,6 @@ set(cmake_args
   -DBUILD_ALL_PLUGINS=OFF
   -DBUILD_COMPOSITEDATASET_PLUGIN=OFF
   -DBUILD_EXAMPLE_PLUGINS=OFF
-  -DBUILD_LEGACY/ITKDATADIFFUSIONGRADIENTLIST_PLUGIN=ON
-  -DBUILD_LEGACY/ITKDATAIMAGE_PLUGIN=ON
-  -DBUILD_LEGACY/ITKDATASHIMAGE_PLUGIN=ON
-  -DBUILD_LEGACY/ITKDATATENSORIMAGE_PLUGIN=ON
-  -DBUILD_LEGACY/ITKPROCESSREGISTRATIONDIFFEOMORPHICDEMONS_PLUGIN=ON
-  -DBUILD_LEGACY/MEDSEGMENTATION_PLUGIN=ON
-  -DBUILD_LEGACY/MEDVTKFIBERSDATA_PLUGIN=ON
-  -DBUILD_LEGACY/MEDVTKVIEW_PLUGIN=ON
-  -DBUILD_LEGACY/QTDCMDATASOURCE_PLUGIN=ON
-  -DBUILD_LEGACY/UNDOREDOREGISTRATION_PLUGIN=ON
-  -DBUILD_LEGACY/VTKDATAMESH_PLUGIN=ON
-  -DBUILD_PROCESS/ARITHMETIC_OPERATION_PLUGIN=ON
-  -DBUILD_PROCESS/MORPHOMATH_OPERATION_PLUGIN=ON
   )
   
 if (USE_DTKIMAGING)
@@ -144,6 +131,7 @@ if (WIN32)
   file(TO_NATIVE_PATH ${ITK_DIR}                 ITK_BIN_BASE)
   file(TO_NATIVE_PATH ${VTK_DIR}                 VTK_BIN_BASE)
   file(TO_NATIVE_PATH ${dtk_DIR}                 DTK_BIN_BASE)
+  file(TO_NATIVE_PATH ${QtDCM_DIR}               DCM_BIN_BASE)
   file(TO_NATIVE_PATH ${_qt5Core_install_prefix} QT5_BIN_BASE)
   file(TO_NATIVE_PATH ${medInria_BINARY_DIR}     MED_BIN_BASE)
   
@@ -152,12 +140,13 @@ if (WIN32)
   set(MED_BIN_BASE ${MED_BIN_BASE}\\${CONFIG_MODE}\\bin)  
   
   add_custom_command(TARGET ${ep}
-          POST_BUILD
-          COMMAND for %%I in ( ${ITK_BIN_BASE}\\bin\\${CONFIG_MODE}\\*.dll ) do (if EXIST ${MED_BIN_BASE}\\%%~nxI (del /S ${MED_BIN_BASE}\\%%~nxI & mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) else mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) 
-          COMMAND for %%I in ( ${VTK_BIN_BASE}\\bin\\${CONFIG_MODE}\\*.dll ) do (if EXIST ${MED_BIN_BASE}\\%%~nxI (del /S ${MED_BIN_BASE}\\%%~nxI & mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) else mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) 
-          COMMAND for %%I in ( ${DTK_BIN_BASE}\\bin\\${CONFIG_MODE}\\*.dll ) do (if EXIST ${MED_BIN_BASE}\\%%~nxI (del /S ${MED_BIN_BASE}\\%%~nxI & mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) else mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) 
-          COMMAND for %%I in ( ${QT5_BIN_BASE}\\bin\\*.dll                 ) do (if EXIST ${MED_BIN_BASE}\\%%~nxI (del /S ${MED_BIN_BASE}\\%%~nxI & mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) else mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) 
-  		)
+        POST_BUILD
+        COMMAND for %%I in ( ${ITK_BIN_BASE}\\bin\\${CONFIG_MODE}\\*.dll ) do (if EXIST ${MED_BIN_BASE}\\%%~nxI (del /S ${MED_BIN_BASE}\\%%~nxI & mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) else mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) 
+        COMMAND for %%I in ( ${VTK_BIN_BASE}\\bin\\${CONFIG_MODE}\\*.dll ) do (if EXIST ${MED_BIN_BASE}\\%%~nxI (del /S ${MED_BIN_BASE}\\%%~nxI & mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) else mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) 
+        COMMAND for %%I in ( ${DTK_BIN_BASE}\\bin\\${CONFIG_MODE}\\*.dll ) do (if EXIST ${MED_BIN_BASE}\\%%~nxI (del /S ${MED_BIN_BASE}\\%%~nxI & mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) else mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) 
+        COMMAND for %%I in ( ${DCM_BIN_BASE}\\bin\\${CONFIG_MODE}\\*.dll ) do (if EXIST ${MED_BIN_BASE}\\%%~nxI (del /S ${MED_BIN_BASE}\\%%~nxI & mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) else mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) 
+        COMMAND for %%I in ( ${QT5_BIN_BASE}\\bin\\*.dll                 ) do (if EXIST ${MED_BIN_BASE}\\%%~nxI (del /S ${MED_BIN_BASE}\\%%~nxI & mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) else mklink /H ${MED_BIN_BASE}\\%%~nxI %%~fI) 
+    )
 endif()
 
 

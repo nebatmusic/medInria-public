@@ -43,6 +43,12 @@ set(git_url git://git.dcmtk.org/dcmtk.git)
 set(git_tag DCMTK-3.6.2)
 
 ## #############################################################################
+## Check if patch has to be applied
+## #############################################################################
+  
+ep_GeneratePatchCommand(DCMTK DCMTK_PATCH_COMMAND DCMTK_STL_QUIET.patch)
+
+## #############################################################################
 ## Add specific cmake arguments for configuration step of the project
 ## #############################################################################
 
@@ -68,6 +74,7 @@ set(cmake_args
   -DDCMTK_WITH_DOXYGEN:BOOL=OFF
   -DDCMTK_WITH_ZLIB:BOOL=OFF    
   -DDCMTK_WITH_OPENSSL:BOOL=OFF 
+  -DDCMTK_WITH_ICU:BOOL=ON 
   -DDCMTK_WITH_PNG:BOOL=OFF     
   -DDCMTK_WITH_TIFF:BOOL=OFF    
   -DDCMTK_WITH_XML:BOOL=OFF
@@ -81,12 +88,6 @@ set(cmake_args
   -DDCMTK_ENABLE_PRIVATE_TAGS:BOOL=ON
   -DDCMTK_FORCE_FPIC_ON_UNIX:BOOL=ON
   )
-
-## #############################################################################
-## Check if patch has to be applied
-## #############################################################################
-  
-ep_GeneratePatchCommand(DCMTK DCMTK_PATCH_COMMAND DCMTK_STL_QUIET.patch)
 
 ## #############################################################################
 ## Add external-project
