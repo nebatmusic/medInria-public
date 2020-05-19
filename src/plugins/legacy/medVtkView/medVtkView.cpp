@@ -13,8 +13,9 @@
 
 #include "medVtkView.h"
 
-#include <QWidget>
 #include <QHash>
+#include <QTest>
+#include <QWidget>
 
 #include <QVTKOpenGLWidget.h>
 #include <QGLFramebufferObject>
@@ -53,11 +54,6 @@
 #include <medParameterPoolManagerL.h>
 #include <medSettingsManager.h>
 
-//// declare x11-specific function to prevent the window manager breaking thumbnail generation
-//#ifdef Q_OS_X11
-//void qt_x11_wait_for_window_manager(QWidget*);
-//#endif
-
 class medVtkViewPrivate
 {
 public:
@@ -80,14 +76,16 @@ public:
     QPointer<medClutEditorToolBox> transFun;
 
     QScopedPointer<medVtkViewBackend> backend;
+
+    QMainWindow* mainWindow;
 };
 
 medVtkView::medVtkView(QObject* parent): medAbstractImageView(parent),
     d(new medVtkViewPrivate)
 {
     // setup initial internal state of the view
-    d->currentView = NULL;
-    d->interactorStyle2D = NULL;
+    d->currentView = nullptr;
+    d->interactorStyle2D = nullptr;
 
     // construct render window
         // renWin
@@ -96,12 +94,15 @@ medVtkView::medVtkView(QObject* parent): medAbstractImageView(parent),
     d->renWin->SetStereoTypeToCrystalEyes();
     d->renWin->SetAlphaBitPlanes(1);
     d->renWin->SetMultiSamples(0);
-            // needed for immersive room
+
+    // needed for immersive room
     if (qApp->arguments().contains("--stereo"))
+    {
         d->renWin->SetStereoRender(1);
+    }
 
     // construct views
-        // view2d
+    // view2d
     d->view2d = vtkImageView2D::New();
     d->view2d->SetBackground(0.0, 0.0, 0.0);
     d->view2d->SetLeftButtonInteractionStyle(vtkInteractorStyleImageView2D::InteractionTypeZoom);
@@ -113,7 +114,7 @@ medVtkView::medVtkView(QObject* parent): medAbstractImageView(parent),
     d->view2d->ShowScalarBarOff();
     d->view2d->ShowRulerWidgetOn();
     d->interactorStyle2D = d->view2d->GetInteractorStyle(); // save interactorStyle
-        // view3d.
+    // view3d
     d->view3d = vtkImageView3D::New();
     d->view3d->SetShowBoxWidget(0);
     d->view3d->SetCroppingModeToOff();
@@ -137,6 +138,9 @@ medVtkView::medVtkView(QObject* parent): medAbstractImageView(parent),
     d->viewWidget->installEventFilter(this);
     d->viewWidget->setFocusPolicy(Qt::ClickFocus );
     d->viewWidget->setCursor(QCursor(Qt::CrossCursor));
+
+    d->mainWindow = new QMainWindow();
+    d->mainWindow->setCentralWidget(d->viewWidget);
 
     d->backend.reset(new medVtkViewBackend(d->view2d, d->view3d, d->renWin));
 
@@ -223,12 +227,16 @@ QWidget* medVtkView::viewWidget()
     return d->viewWidget;
 }
 
+QMainWindow* medVtkView::mainWindow()
+{
+    return d->mainWindow;
+}
+
 void medVtkView::reset()
 {
     d->view2d->Reset();
     d->view3d->Reset();
     this->render();
-
 }
 
 void medVtkView::render()
@@ -445,28 +453,33 @@ void medVtkView::displayDataInfo(uint layer)
 
 QImage medVtkView::buildThumbnail(const QSize &size)
 {
-    this->blockSignals(true);//we dont want to send things that would ending up on updating some gui things or whatever. - RDE
+    // We dont want to send things that would ending up on updating gui things.
+    this->blockSignals(true);
     int w(size.width()), h(size.height());
 
-//    // will cause crashes if any calls to renWin->Render() happened before this line
-    d->viewWidget->resize(w,h);
-    d->viewWidget->show();
+    // will cause crashes if any calls to renWin->Render() happened before this line
+    d->mainWindow->resize(w,h);
+    d->mainWindow->show();
     d->renWin->SetSize(w,h);
     render();
 
-////#ifdef Q_OS_X11
-////    // X11 likes to animate window creation, which means by the time we grab the
-////    // widget, it might not be fully ready yet, in which case we get artefacts.
-////    // Only necessary if rendering to an actual screen window.
-////    if(d->renWin->GetOffScreenRendering() == 0) {
-////        qt_x11_wait_for_window_manager(d->viewWidget);
-////    }
-////#endif
+#ifdef Q_OS_LINUX
+    // X11 likes to animate window creation, which means by the time we grab the
+    // widget, it might not be fully ready yet, in which case we get artefacts.
+    // Only necessary if rendering to an actual screen window.
+    if(d->renWin->GetOffScreenRendering() == 0)
+    {
+        QTest::qWaitForWindowExposed(d->viewWidget);
+    }
+#endif
 
     QImage thumbnail = d->viewWidget->grabFramebuffer();
-    d->viewWidget->hide();
+
+    d->mainWindow->hide();
     this->blockSignals(false);
+
     thumbnail = thumbnail.copy(0, thumbnail.height() - h, w, h);
+
     return thumbnail;
 }
 
@@ -583,7 +596,7 @@ void medVtkView::showHistogram(bool checked)
         if (d->transFun == nullptr)
         {
             d->transFun = new medClutEditorToolBox();
-            d->viewWidget->parentWidget()->layout()->addWidget(d->transFun);
+            d->mainWindow->parentWidget()->layout()->addWidget(d->transFun);
 
             d->transFun->setView(this);
             d->transFun->setMaximumHeight(350);

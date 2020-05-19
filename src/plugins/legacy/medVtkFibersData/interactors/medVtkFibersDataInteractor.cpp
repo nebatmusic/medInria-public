@@ -93,7 +93,6 @@ public:
     medDoubleParameterL *minIntensityParameter;
     medDoubleParameterL *maxIntensityParameter;
 
-    medBoolParameterL *gpuParameter;
     medBoolGroupParameterL *shapesDisplayedGroupParameter;
     medBoolParameterL *displayPolylinesParameter;
     medBoolParameterL *displayRibbonsParameter;
@@ -289,12 +288,6 @@ medVtkFibersDataInteractor::medVtkFibersDataInteractor(medAbstractView *parent):
     connect(d->alphaTransparencyParameter, SIGNAL(valueChanged(bool)), this, SLOT(updateLut()));
     connect(d->LutFiberParameter, SIGNAL(valueChanged(QString)), this, SLOT(updateLut()));
 
-    d->gpuParameter = new medBoolParameterL("gpuFiberParameter", this);
-    d->gpuParameter->setToolTip(tr("Select to use GPU hardware acceleration when possible."));
-    d->gpuParameter->setText(tr("Use hardware acceleration"));
-    d->gpuParameter->getCheckBox()->setEnabled(false);
-    d->parameters << d->gpuParameter;
-
     d->shapesDisplayedGroupParameter = new medBoolGroupParameterL("shapesDisplayedGroupParameter", this);
     d->parameters << d->shapesDisplayedGroupParameter;
 
@@ -322,7 +315,6 @@ medVtkFibersDataInteractor::medVtkFibersDataInteractor(medAbstractView *parent):
     d->radiusParameter->setRange(1, 10);
 
     connect (d->colorFiberParameter, SIGNAL(valueChanged(QString)), this, SLOT(setFiberColorMode(QString)));
-    connect (d->gpuParameter, SIGNAL(valueChanged(bool)), this, SLOT(activateGPU(bool)));
     connect (d->displayPolylinesParameter, SIGNAL(valueChanged(bool)), this, SLOT(selectLineMode (bool)));
     connect (d->displayRibbonsParameter, SIGNAL(valueChanged(bool)), this, SLOT(selectRibbonMode(bool)));
     connect (d->displayTubesParameter, SIGNAL(valueChanged(bool)), this, SLOT(selectTubeMode(bool)));
@@ -426,6 +418,7 @@ medVtkFibersDataInteractor::medVtkFibersDataInteractor(medAbstractView *parent):
     }
 
     d->slicingParameter = new medIntParameterL("Slicing", this);
+    d->slicingParameter->getSlider()->setOrientation(Qt::Horizontal);
     connect(d->slicingParameter, SIGNAL(valueChanged(int)), this, SLOT(moveToSlice(int)));
     connect(d->view->positionBeingViewedParameter(), SIGNAL(valueChanged(QVector3D)), this, SLOT(updateSlicingParam()));
 }
@@ -536,9 +529,7 @@ void medVtkFibersDataInteractor::setInputData(medAbstractData *data)
         d->data = data;
 
         d->view2d->SetInput(d->actor, d->view->layer(d->data));
-
-        //TODO - harmonise all of this setInput method in vtkImageView.
-        d->view3d->GetRenderer()->AddActor(d->actor);
+        d->view3d->SetInput(d->actor, d->view->layer(d->data));
         this->updateWidgets();
     }
 
@@ -646,20 +637,6 @@ void medVtkFibersDataInteractor::setRenderingMode(RenderingMode mode)
             dtkDebug() << "medVtkFibersDataInteractor: unknown rendering mode";
     }
     d->view->render();
-}
-
-void medVtkFibersDataInteractor::activateGPU(bool activate)
-{
-    if (activate)
-    {
-        vtkFibersManager::UseHardwareShadersOn();
-        d->manager->ChangeMapperToUseHardwareShaders();
-    } 
-    else
-    {
-        vtkFibersManager::UseHardwareShadersOff();
-        d->manager->ChangeMapperToDefault();
-    }
 }
 
 void medVtkFibersDataInteractor::setFiberColorMode(QString mode)
@@ -1443,7 +1420,6 @@ QWidget* medVtkFibersDataInteractor::buildToolBoxWidget()
     // Finish LUT and WindowLevel range for it 
     ////////////////////////////////////////////////////////////////
 
-    toolBoxLayout->addWidget(d->gpuParameter->getCheckBox());
     toolBoxLayout->addWidget(d->shapesDisplayedGroupParameter->getRadioButtonGroup());
     toolBoxLayout->addWidget(d->radiusParameter->getLabel());
     d->radiusParameter->getSlider()->setOrientation(Qt::Horizontal);

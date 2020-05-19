@@ -2,7 +2,7 @@
 
  medInria
 
- Copyright (c) INRIA 2013 - 2018. All rights reserved.
+ Copyright (c) INRIA 2013 - 2020. All rights reserved.
  See LICENSE.txt for details.
 
   This software is distributed WITHOUT ANY WARRANTY; without even
@@ -11,83 +11,43 @@
 
 =========================================================================*/
 
+#include "vtkImage2DDisplay.h"
 #include "vtkImageView2D.h"
 
-#include "vtkBoundingBox.h"
-#include "vtkCamera.h"
-#include "vtkCommand.h"
-#include "vtkImageActor.h"
-#include "vtkImageData.h"
-#include "vtkImageMapToColors.h"
-#include "vtkObjectFactory.h"
-#include "vtkRenderWindow.h"
-#include "vtkRenderWindowInteractor.h"
-#include "vtkRenderer.h"
-#include "vtkMatrix4x4.h"
-#include "vtkTransform.h"
-#include "vtkScalarBarActor.h"
-#include "vtkCornerAnnotation.h"
-#include "vtkTextProperty.h"
-#include "vtkLookupTable.h"
-#include "vtkMath.h"
-#include "vtkPlane.h"
-#include "vtkCutter.h"
-#include "vtkActor.h"
-#include "vtkPolyDataMapper.h"
-#include "vtkProp3DCollection.h"
-#include "vtkDataSetCollection.h"
-#include "vtkPoints.h"
-#include "vtkIdList.h"
-#include "vtkOutlineSource.h"
-#include "vtkMatrixToLinearTransform.h"
-#include "vtkPointData.h"
-#include "vtkUnsignedCharArray.h"
-#include "vtkIntArray.h"
-#include "vtkImageAccumulate.h"
-#include "vtkCoordinate.h"
-#include "vtkTextActor.h"
-#include "vtkAxisActor2D.h"
-#include "vtkProperty.h"
-#include <vtkOrientationAnnotation.h>
-#include <vtkImageView2DCommand.h>
-#include <vtkProperty2D.h>
-#include <vtkSmartPointer.h>
-#include <vtkAxisActor2D.h>
-#include <vtkAxes2DWidget.h>
-#include <vtkRulerWidget.h>
-#include "vtkDistanceWidget.h"
-#include "vtkDistanceRepresentation2D.h"
-#include "vtkAngleWidget.h"
-#include "vtkAngleRepresentation2D.h"
-#include "vtkLeaderActor2D.h"
-#include "vtkProperty2D.h"
-#include <vtkPointHandleRepresentation2D.h>
-#include <vtkDataSet2DWidget.h>
-#include <vtkImageViewCornerAnnotation.h>
-#include <vtkImageCast.h>
-#include <vtkColorTransferFunction.h>
-#include <vtkPiecewiseFunction.h>
-#include <vtkImageReslice.h>
-#include <vtkInformation.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
-
-#include <vtkTextActor3D.h>
-#include <vtkImageMapper3D.h>
-
-#include <vector>
-#include <string>
-#include <sstream>
-#include <cmath>
-
-#include <vtkImageFromBoundsSource.h>
-#include <vtkRendererCollection.h>
-#include "vtkImage2DDisplay.h"
-
-#include <vtkImageAlgorithm.h>
 #include <vtkAlgorithmOutput.h>
+#include <vtkAngleWidget.h>
+#include <vtkAngleRepresentation2D.h>
+#include <vtkAxes2DWidget.h>
+#include <vtkAxisActor2D.h>
+#include <vtkCamera.h>
+#include <vtkDataSet2DWidget.h>
+#include <vtkDataSetCollection.h>
+#include <vtkDistanceWidget.h>
+#include <vtkDistanceRepresentation2D.h>
+#include <vtkImageView2DCommand.h>
+#include <vtkImageViewCornerAnnotation.h>
+#include <vtkInformation.h>
+#include <vtkLeaderActor2D.h>
+#include <vtkMapper.h>
+#include <vtkMatrixToLinearTransform.h>
+#include <vtkOrientationAnnotation.h>
+#include <vtkPlane.h>
+#include <vtkPointData.h>
+#include <vtkPointSet.h>
+#include <vtkPolyData.h>
+#include <vtkProp3DCollection.h>
+#include <vtkProperty2D.h>
+#include <vtkRenderer.h>
+#include <vtkRenderWindow.h>
+#include <vtkRenderWindowInteractor.h>
+#include <vtkRulerWidget.h>
+#include <vtkScalarBarActor.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
+#include <vtkTransform.h>
 
+#include <sstream>
 
-vtkStandardNewMacro(vtkImageView2D);
+vtkStandardNewMacro(vtkImageView2D)
 
 //----------------------------------------------------------------------------
 vtkImageView2D::vtkImageView2D()
@@ -156,6 +116,10 @@ vtkImageView2D::vtkImageView2D()
   rep2->GetRay2()->GetProperty()->SetColor (0,1,0);
   rep2->GetArc()->GetProperty()->SetColor (0,1,0);
 
+  // Orientation
+  matrixOrientation[0][0] = "R"; matrixOrientation[0][1] = "L";
+  matrixOrientation[1][0] = "A"; matrixOrientation[1][1] = "P";
+  matrixOrientation[2][0] = "I"; matrixOrientation[2][1] = "S";
   this->SetAnnotationsFromOrientation();
 
   vtkInteractorStyle* style = vtkInteractorStyleImageView2D::New();
@@ -165,7 +129,6 @@ vtkImageView2D::vtkImageView2D()
   this->SetTransferFunctions(nullptr, nullptr, 0);
 
   SetRenderer(this->LayerInfoVec[0].Renderer);
-
 }
 
 //----------------------------------------------------------------------------
@@ -186,12 +149,11 @@ vtkImageView2D::~vtkImageView2D()
   this->OrientationAnnotation->Delete();
 
 
-  for (std::list<vtkDataSet2DWidget*>::iterator it3 = this->DataSetWidgets.begin();
-      it3!=this->DataSetWidgets.end(); ++it3)
+  for (auto &dataSetWidget : this->DataSetWidgets)
   {
-    (*it3)->Off();
-    (*it3)->SetImageView (nullptr);
-    (*it3)->Delete();
+    dataSetWidget->Off();
+    dataSetWidget->SetImageView (nullptr);
+    dataSetWidget->Delete();
   }
 }
 
@@ -964,8 +926,13 @@ int vtkImageView2D::SetCameraFromOrientation()
 */
 void vtkImageView2D::SetAnnotationStyle(unsigned int arg)
 {
-  this->AnnotationStyle = arg;
-  this->SetAnnotationsFromOrientation();
+    this->AnnotationStyle = arg;
+    this->SetAnnotationsFromOrientation();
+}
+
+unsigned int vtkImageView2D::GetAnnotationStyle2D()
+{
+    return this->AnnotationStyle;
 }
 
 //----------------------------------------------------------------------------
@@ -977,129 +944,130 @@ the CornerAnnotation are modified.
 */
 void vtkImageView2D::SetAnnotationsFromOrientation()
 {
-  // This method has to be called after the camera
-  // has been set according to orientation and convention.
-  // We rely on the camera settings to compute the oriention
-  // annotations.
+    // This method has to be called after the camera
+    // has been set according to orientation and convention.
+    // We rely on the camera settings to compute the oriention
+    // annotations.
 
-  std::string solution[4]={"L","P","R","A"};
+    std::string solution[4]={"L","P","R","A"};
 
-  vtkCamera *cam = this->GetRenderer() ? this->GetRenderer()->GetActiveCamera() : nullptr;
-  if (cam)
-  {
-
-    std::string matrix[3][2];
-    matrix[0][0] = "R";matrix[0][1] = "L";
-    matrix[1][0] = "A";matrix[1][1] = "P";
-    matrix[2][0] = "I";matrix[2][1] = "S";
-
-    ///\todo surely there is a simpler way to do all of that !
-
-    double* viewup = cam->GetViewUp();
-    double* normal = cam->GetViewPlaneNormal();
-    double rightvector[3];
-    vtkMath::Cross (normal, viewup, rightvector);
-
-    unsigned int id1 = 0;
-    unsigned int id2 = 0;
-    //Ben: I removed id3 and dot3 since they are not used: fewer gcc warnings
-//    unsigned int id3 = 0;
-    double dot1 = 0;
-    double dot2 = 0;
-//    double dot3 = 0;
-
-    for (unsigned int i=0; i<3; i++)
+    vtkCamera *cam = this->GetRenderer() ? this->GetRenderer()->GetActiveCamera() : nullptr;
+    if (cam)
     {
-      if (dot1 <= std::abs (viewup[i]))
-      {
-        dot1 = std::abs (viewup[i]);
-        id1 = i;
-      }
-      if (dot2 <= std::abs (rightvector[i]))
-      {
-        dot2 = std::abs (rightvector[i]);
-        id2 = i;
-      }
-//      if (dot3 <= std::abs (normal[i]))
-//      {
-//        dot3 = std::abs (normal[i]);
-//        id3 = i;
-//      }
+        double* viewup = cam->GetViewUp();
+        double* normal = cam->GetViewPlaneNormal();
+        double rightvector[3];
+        vtkMath::Cross (normal, viewup, rightvector);
+
+        unsigned int id1 = 0;
+        unsigned int id2 = 0;
+        double dot1 = 0;
+        double dot2 = 0;
+
+        for (unsigned int i=0; i<3; i++)
+        {
+            if (dot1 <= std::abs (viewup[i]))
+            {
+                dot1 = std::abs (viewup[i]);
+                id1 = i;
+            }
+            if (dot2 <= std::abs (rightvector[i]))
+            {
+                dot2 = std::abs (rightvector[i]);
+                id2 = i;
+            }
+        }
+
+        if (viewup[id1] > 0)
+        {
+            solution[3] = matrixOrientation[id1][0];
+            solution[1] = matrixOrientation[id1][1];
+        }
+        else
+        {
+            solution[3] = matrixOrientation[id1][1];
+            solution[1] = matrixOrientation[id1][0];
+        }
+        if (rightvector[id2] > 0)
+        {
+            solution[0] = matrixOrientation[id2][0];
+            solution[2] = matrixOrientation[id2][1];
+        }
+        else
+        {
+            solution[0] = matrixOrientation[id2][1];
+            solution[2] = matrixOrientation[id2][0];
+        }
     }
 
-    if (viewup[id1] > 0)
+    for (unsigned int i=0; i<4; i++)
     {
-      solution[3] = matrix[id1][0];
-      solution[1] = matrix[id1][1];
-    } else {
-      solution[3] = matrix[id1][1];
-      solution[1] = matrix[id1][0];
+        this->OrientationAnnotation->SetText (i, solution[i].c_str());
     }
-    if (rightvector[id2] > 0)
+
+    std::ostringstream osNW;
+    std::ostringstream osSW;
+    std::ostringstream osSE;
+    std::ostringstream osNE;
+
+    switch(this->AnnotationStyle)
     {
-      solution[0] = matrix[id2][0];
-      solution[2] = matrix[id2][1];
-    } else {
-      solution[0] = matrix[id2][1];
-      solution[2] = matrix[id2][0];
+        case AnnotationStyle2:
+            osNW << "<size>\n"
+                 << "<spacing>\n"
+                 << "<xyz>\n"
+                 << "<value>";
+
+            osSW << "<zoom>";
+
+            osNE << "<slice_and_max>\n<window>\n<level>";
+            break;
+
+        case AnnotationStyle1:
+        default:
+            osSW << "<zoom>\n";
+            osSW << "<slice_and_max>\n";
+            osSW<< "<pos_z>";
+
+            osNW<< "<image_size>\n";
+            osNW<< "<voxel_size>\n";
+            osNW<< "<coord_xy_and_value>\n";
+            osNW<< "<pos_xy>\n";
+            osNW<< "<window_level>";
+
+            osNE << "<patient>\n<study>\n<series>";
+
+            switch( this->ViewOrientation )
+            {
+                case vtkImageView2D::VIEW_ORIENTATION_AXIAL:
+                    osSE << "Axial View";
+                    break;
+                case vtkImageView2D::VIEW_ORIENTATION_CORONAL:
+                    osSE << "Coronal View";
+                    break;
+                case vtkImageView2D::VIEW_ORIENTATION_SAGITTAL:
+                    osSE << "Sagittal View";
+                    break;
+            }
+            break;
     }
-  }
 
-  for (unsigned int i=0; i<4; i++)
-    this->OrientationAnnotation->SetText (i, solution[i].c_str());
-
-  std::ostringstream osNW;
-  std::ostringstream osSW;
-  std::ostringstream osSE;
-  std::ostringstream osNE;
-
-  switch(this->AnnotationStyle)
-  {
-    case AnnotationStyle2:
-      osNW << "<size>\n"
-      << "<spacing>\n"
-      << "<xyz>\n"
-      << "<value>\n";
-      osSW << "<zoom>";
-      osNE << "<slice_and_max>\n<window>\n<level>";
-      break;
-
-    case AnnotationStyle1:
-    default:
-
-      osSW << "<zoom>\n";
-      osSW << "<slice_and_max>\n";
-      osNW<< "Image size: " << "<size_x>x<size_y>\n";
-      osNW<< "Voxel size: " << "<spacing_x>x<spacing_y>\n";
-      osNW<< "X: " << "<coord_x>" << " px Y: " << "<coord_y>" << " px " << "<value>\n";
-      osNW<< "X: " << "<pos_x>" << " mm Y: " << "<pos_y> mm\n";
-      osSW<< "Location: " << "<pos_z>" << " mm";
-      osNW<< "<window_level>";
-      osNE << "<patient>\n<study>\n<series>";
-
-      switch( this->ViewOrientation )
+    if (osSW.str().size())
     {
-      case vtkImageView2D::VIEW_ORIENTATION_AXIAL:
-          osSE << "Axial View";
-          break;
-      case vtkImageView2D::VIEW_ORIENTATION_CORONAL:
-          osSE << "Coronal View";
-          break;
-      case vtkImageView2D::VIEW_ORIENTATION_SAGITTAL:
-          osSE << "Sagittal View";
-          break;
+        this->GetCornerAnnotation()->SetText (0, osSW.str().c_str());
     }
-      break;
-  }
-
-  if (osNW.str().size())
-    this->GetCornerAnnotation()->SetText (2, osNW.str().c_str());
-  if (osSE.str().size())
-    this->GetCornerAnnotation()->SetText (1, osSE.str().c_str());
-  if (osSW.str().size())
-    this->GetCornerAnnotation()->SetText (0, osSW.str().c_str());
-  if (osNE.str().size())
-    this->GetCornerAnnotation()->SetText (3, osNE.str().c_str());
+    if (osSE.str().size())
+    {
+        this->GetCornerAnnotation()->SetText (1, osSE.str().c_str());
+    }
+    if (osNW.str().size())
+    {
+        this->GetCornerAnnotation()->SetText (2, osNW.str().c_str());
+    }
+    if (osNE.str().size())
+    {
+        this->GetCornerAnnotation()->SetText (3, osNE.str().c_str());
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -1577,7 +1545,7 @@ void vtkImageView2D::UnInstallPipeline()
   {
     //this->GetRenderer()->RemoveViewProp ( this->ImageActor );
     this->GetRenderer()->RemoveViewProp ( this->OrientationAnnotation );
-    //this->ImageActor->SetInput (nullptr);
+    //this->ImageActor->SetInputData (nullptr);
   }
 
   if( this->InteractorStyle )
@@ -1621,14 +1589,13 @@ void vtkImageView2D::InstallInteractor()
 
   if (this->RenderWindow)
   {
-
-    for (LayerInfoVecType::iterator it = this->LayerInfoVec.begin(); it!=this->LayerInfoVec.end(); ++it)
-    {
-      if (vtkRenderer *renderer = it->Renderer)
+      for (auto it : LayerInfoVec)
       {
-        this->RenderWindow->AddRenderer(renderer);
+          if (vtkRenderer *renderer = it.Renderer)
+          {
+              this->RenderWindow->AddRenderer(renderer);
+          }
       }
-    }
   }
 
   this->Axes2DWidget->SetImageView (this);
@@ -1646,11 +1613,10 @@ void vtkImageView2D::InstallInteractor()
   if( this->ShowImageAxis && this->RenderWindow && this->GetRenderer())
     this->Axes2DWidget->On();
 
-  for (std::list<vtkDataSet2DWidget*>::iterator it = this->DataSetWidgets.begin();
-      it!=this->DataSetWidgets.end(); ++it)
+  for (auto &dataSetWidget : this->DataSetWidgets)
   {
-    (*it)->SetImageView(this);
-    (*it)->On();
+    dataSetWidget->SetImageView(this);
+    dataSetWidget->On();
   }
 
   this->IsInteractorInstalled = 1;
@@ -1671,21 +1637,20 @@ void vtkImageView2D::UnInstallInteractor()
   }
 
   if (this->RenderWindow)
-   {
-     for (LayerInfoVecType::iterator it = this->LayerInfoVec.begin(); it!=this->LayerInfoVec.end(); ++it)
-     {
-      if (vtkRenderer *renderer = it->Renderer)
-       {
-        this->RenderWindow->RemoveRenderer(renderer);
-       }
-     }
-   }
-
-
-  for (std::list<vtkDataSet2DWidget*>::iterator it = this->DataSetWidgets.begin(); it!=this->DataSetWidgets.end(); ++it )
   {
-    (*it)->SetImageView(nullptr);
-    (*it)->Off();
+      for (auto it : LayerInfoVec)
+      {
+          if (vtkRenderer *renderer = it.Renderer)
+          {
+              this->RenderWindow->RemoveRenderer(renderer);
+          }
+      }
+  }
+
+  for (auto &dataSetWidget : this->DataSetWidgets)
+  {
+    dataSetWidget->SetImageView(nullptr);
+    dataSetWidget->Off();
   }
 
   this->IsInteractorInstalled = 0;
@@ -1718,12 +1683,6 @@ int vtkImageView2D::GetInterpolate(int layer) const
   return iRes;
 }
 
-////----------------------------------------------------------------------------
-//void vtkImageView2D::SetTransferFunctions(vtkColorTransferFunction* color, vtkPiecewiseFunction *opacity)
-//{
-//    this->SetTransferFunctions (color, opacity, CurrentLayer);
-//}
-
 //----------------------------------------------------------------------------
 void vtkImageView2D::ApplyColorTransferFunction(vtkScalarsToColors * colors, int layer)
 {
@@ -1735,18 +1694,10 @@ void vtkImageView2D::ApplyColorTransferFunction(vtkScalarsToColors * colors, int
 
 void vtkImageView2D::SetFirstLayer(vtkAlgorithmOutput *pi_poInputAlgoImg, vtkMatrix4x4 *matrix, int layer)
 {
-    if(pi_poInputAlgoImg)
-    {
-        if( layer > 0 )
-          this->AddLayer(layer);
-
-        this->GetImage2DDisplayForLayer(layer)->SetInput(pi_poInputAlgoImg);
-        this->Superclass::SetInput (pi_poInputAlgoImg, matrix, 0);
-        this->GetWindowLevel(layer)->SetInputConnection(pi_poInputAlgoImg);
-        double *range = this->GetImage2DDisplayForLayer(layer)->GetMedVtkImageInfo()->scalarRange;
-        this->SetColorRange(range,layer);
-        this->Reset();
-    }
+    vtkImage2DDisplay *imageDisplay = this->GetImage2DDisplayForLayer(layer);
+    imageDisplay->SetInputProducer(pi_poInputAlgoImg);
+    this->Superclass::SetInput (pi_poInputAlgoImg, matrix, 0);
+    imageDisplay->SetInputData(m_poInternalImageFromInput);
 }
 
 /**
@@ -1784,72 +1735,70 @@ int vtkImageView2D::GetFirstLayer() const
 /** Set/Get the input image to the viewer. */
 void vtkImageView2D::SetInput(vtkAlgorithmOutput* pi_poVtkAlgoOutput, vtkMatrix4x4 *matrix /*= 0*/, int layer /*= 0*/)
 {
-  vtkRenderer *renderer = 0;
+    if (pi_poVtkAlgoOutput)
+    {
+        if (layer == 0 || IsFirstLayer(layer))
+        {
+            SetFirstLayer(pi_poVtkAlgoOutput, matrix, layer);
+        }
+        else // layer > 0
+        {
+            SetOtherLayer(pi_poVtkAlgoOutput, matrix, layer);
+        }
 
-  if ( layer == 0 || IsFirstLayer(layer))
-  {
-      SetFirstLayer( pi_poVtkAlgoOutput, matrix, layer);
-  }
-  else // layer >0
-  {
-      this->AddLayer(layer);
-
-      if (!this->GetMedVtkImageInfo() || !this->GetMedVtkImageInfo()->initialized)
-      {
-          vtkErrorMacro (<< "Set input prior to adding layers");
-          return;
-      }
-
-      vtkAlgorithmOutput *reslicerOutputPort = this->ResliceImageToInput(pi_poVtkAlgoOutput, matrix);
-      if (!reslicerOutputPort)
-      {
-          vtkErrorMacro (<< "Could not reslice image to input");
-          return;
-      }
-
-      // determine the scalar range. Copy the update extent to match the input's one
-      //double range[2];
-      //TODO GPR: to check
-      //reslicedImage->UpdateExtent (this->GetInput()->GetUpdateExtent());
-      //reslicedImage->PropagateUpdateExtent();
-      //reslicedImage->Update();
-      //reslicedImage->GetScalarRange(range);
-
-      vtkImage2DDisplay * imageDisplay = this->GetImage2DDisplayForLayer(layer);
-      imageDisplay->SetInput(reslicerOutputPort);
-      imageDisplay->GetImageActor()->SetUserMatrix (this->OrientationMatrix);
-      this->SetColorRange(imageDisplay->GetMedVtkImageInfo()->scalarRange, layer);
-  }
-
-  renderer = this->GetRendererForLayer(layer);
-  this->LayerInfoVec[layer].ImageAlgo = (vtkImageAlgorithm*)pi_poVtkAlgoOutput->GetProducer();
-  if (!renderer)
-    return;
-
-  if ( this->GetImage2DDisplayForLayer(layer) )
-    renderer->AddViewProp (this->GetImage2DDisplayForLayer(layer)->GetImageActor());
-
-  this->SetCurrentLayer(layer);
-  this->Slice = this->GetSliceForWorldCoordinates (this->CurrentPoint);
-  this->UpdateDisplayExtent();
-  this->UpdateSlicePlane();
-  this->InvokeEvent (vtkImageView2D::SliceChangedEvent);
-
-  // So ugly to do it, for each new layer,
-  // but it 's the only way i found so far to get the annotation correctly rendered ... - RDE
-  renderer->AddViewProp(this->CornerAnnotation);
-  renderer->AddViewProp(this->ScalarBar);
-  renderer->AddViewProp(this->OrientationAnnotation);
-
-  if(this->ShowRulerWidget)
-  {
-    this->ShowRulerWidgetOff();
-    this->ShowRulerWidgetOn();
-  }
+        SetInputCommon(pi_poVtkAlgoOutput, layer);
+    }
 }
+
+void vtkImageView2D::SetInputCommon(vtkAlgorithmOutput* pi_poVtkAlgoOutput, int layer /*= 0*/)
+{
+    this->LayerInfoVec[layer].ImageAlgo = static_cast<vtkImageAlgorithm*>(pi_poVtkAlgoOutput->GetProducer());
+
+    vtkRenderer *renderer = this->GetRendererForLayer(layer);
+    if (renderer)
+    {
+        renderer->AddViewProp (this->GetImage2DDisplayForLayer(layer)->GetImageActor());
+
+        this->SetCurrentLayer(layer);
+        this->Slice = this->GetSliceForWorldCoordinates (this->CurrentPoint);
+        this->UpdateDisplayExtent();
+        this->UpdateSlicePlane();
+        this->InvokeEvent (vtkImageView2D::SliceChangedEvent);
+
+        renderer->AddViewProp(this->CornerAnnotation);
+        renderer->AddViewProp(this->ScalarBar);
+        renderer->AddViewProp(this->OrientationAnnotation);
+
+        if(this->ShowRulerWidget)
+        {
+            this->ShowRulerWidgetOff();
+            this->ShowRulerWidgetOn();
+        }
+    }
+}
+
+void vtkImageView2D::SetOtherLayer(vtkAlgorithmOutput* pi_poVtkAlgoOutput, vtkMatrix4x4 *matrix /*= 0*/, int layer /*= 0*/)
+{
+    // layer > 0
+    this->AddLayer(layer);
+    pi_poVtkAlgoOutput = this->ResliceImageToInput(pi_poVtkAlgoOutput, matrix);
+
+    vtkImage2DDisplay *imageDisplay = this->GetImage2DDisplayForLayer(layer);
+    imageDisplay->SetInputProducer(pi_poVtkAlgoOutput);
+    imageDisplay->SetInputData(static_cast<vtkImageAlgorithm*>(pi_poVtkAlgoOutput->GetProducer())->GetOutput());
+    imageDisplay->GetImageActor()->SetUserMatrix (this->OrientationMatrix);
+
+    this->SetColorRange(imageDisplay->GetMedVtkImageInfo()->scalarRange, layer);
+}
+
 
 void vtkImageView2D::SetInput (vtkActor *actor, int layer, vtkMatrix4x4 *matrix, const int imageSize[], const double imageSpacing[], const double imageOrigin[])
 {
+    vtkDataSet *arg = actor->GetMapper()->GetInput();
+
+    this->DataSetCollection->AddItem(arg);
+    this->DataSetActorCollection->AddItem(actor);
+
     vtkRenderer *renderer = 0;
 
     this->AddLayer(layer);
@@ -1879,7 +1828,6 @@ void vtkImageView2D::SetInput (vtkActor *actor, int layer, vtkMatrix4x4 *matrix,
     this->SetCurrentLayer(layer);
     this->Slice = this->GetSliceForWorldCoordinates (this->CurrentPoint);
     this->UpdateDisplayExtent();
-    // this->UpdateCenter();
     this->UpdateSlicePlane();
     this->InvokeEvent (vtkImageView2D::SliceChangedEvent);
 
@@ -1924,7 +1872,7 @@ vtkImageActor *vtkImageView2D::GetImageActor(int layer) const
 //----------------------------------------------------------------------------
 medVtkImageInfo* vtkImageView2D::GetMedVtkImageInfo(int layer) const
 {
-    medVtkImageInfo* psRes = nullptr;
+    medVtkImageInfo *imageInfo = nullptr;
 
     if (layer == 0)
     {
@@ -1932,10 +1880,10 @@ medVtkImageInfo* vtkImageView2D::GetMedVtkImageInfo(int layer) const
     }
     if (this->HasLayer(layer))
     {
-        psRes = this->GetImage2DDisplayForLayer(layer)->GetMedVtkImageInfo();
+        imageInfo = this->GetImage2DDisplayForLayer(layer)->GetMedVtkImageInfo();
     }
 
-    return psRes;
+    return imageInfo;
 }
 
 //----------------------------------------------------------------------------
@@ -2142,31 +2090,28 @@ void vtkImageView2D::UpdateBounds (const double bounds[6], int layer, vtkMatrix4
 }
 
 //----------------------------------------------------------------------------
-void vtkImageView2D::RemoveDataSet (vtkPointSet *arg)
+void vtkImageView2D::RemoveDataSet(vtkPointSet *arg)
 {
-  this->Superclass::RemoveDataSet (arg);
-
-  for (std::list<vtkDataSet2DWidget*>::iterator it = this->DataSetWidgets.begin();
-      it != this->DataSetWidgets.end(); ++it)
-  {
-    if ((*it)->GetSource()==arg)
+    this->Superclass::RemoveDataSet(arg);
+    for (auto &dataSetWidget : this->DataSetWidgets)
     {
-      (*it)->Off();
-      (*it)->SetImageView (nullptr);
-      (*it)->Delete();
-      this->DataSetWidgets.erase (it);
-      this->Modified();
-      break;
+        if (dataSetWidget->GetSource() == arg)
+        {
+            dataSetWidget->Off();
+            dataSetWidget->SetImageView(nullptr);
+            dataSetWidget->Delete();
+            this->DataSetWidgets.remove(dataSetWidget);
+            this->Modified();
+            break;
+        }
     }
-  }
 }
 
 //----------------------------------------------------------------------------
 std::list<vtkDataSet2DWidget*>::iterator vtkImageView2D::FindDataSetWidget(vtkPointSet* arg)
 {
 
-    for (  std::list<vtkDataSet2DWidget*>::iterator it = this->DataSetWidgets.begin();
-            it != this->DataSetWidgets.end(); ++it)
+  for (std::list<vtkDataSet2DWidget*>::iterator it = this->DataSetWidgets.begin(); it != this->DataSetWidgets.end(); ++it)
   {
     vtkDataSet2DWidget* widget = (*it);
     if (widget->GetSource() == arg)
@@ -2221,7 +2166,6 @@ void vtkImageView2D::RemoveLayer(int layer)
 {  
     if (this->HasLayer(layer))
     {
-
         // ////////////////////////////////////////////////////////////////////////
         // Save image informations of layer 0
         double  bounds[6];
@@ -2271,25 +2215,35 @@ void vtkImageView2D::RemoveLayer(int layer)
         if (this->LayerInfoVec.size() == 0 )
         {
             AddLayer(0);
-            for (auto poWidget : this->DataSetWidgets)
+        }
+
+        for (auto poWidget : this->DataSetWidgets)
+        {
+            poWidget->SetImageView(this);
+            poWidget->On();
+            this->UpdateBounds(poWidget->GetSource()->GetBounds(), 0, matrix, imageSize, imageSpacing, imageOrigin);
+            this->Modified();
+            // If this is the first widget to be added, reset camera
+            if ((!this->GetMedVtkImageInfo() || !this->GetMedVtkImageInfo()->initialized) && (this->DataSetWidgets.size() == 1))
             {
-                poWidget->SetImageView(this);
-                poWidget->On();
-                this->UpdateBounds(poWidget->GetSource()->GetBounds(), 0, matrix, imageSize, imageSpacing, imageOrigin);
-                this->Modified();
-                // If this is the first widget to be added, reset camera
-                if ((!this->GetMedVtkImageInfo() || !this->GetMedVtkImageInfo()->initialized) && (this->DataSetWidgets.size() == 1))
-                {
-                    this->ResetCamera(poWidget->GetSource());
-                }
+                this->ResetCamera(poWidget->GetSource());
             }
         }
+
+        for (int i = 0; i < this->DataSetActorCollection->GetNumberOfItems(); ++i)
+        {
+            auto poActor = vtkActor::SafeDownCast(this->DataSetActorCollection->GetItemAsObject(i));
+            this->UpdateBounds(poActor->GetMapper()->GetBounds(), 0, matrix, imageSize, imageSpacing, imageOrigin);
+            this->Modified();
+        }   
 
         // Make contiguous
         for ( size_t i(0); i<this->LayerInfoVec.size(); ++i )
         {
-            if( this->LayerInfoVec[i].Renderer )
+            if (this->LayerInfoVec[i].Renderer)
+            {
                 this->LayerInfoVec[i].Renderer->SetLayer(static_cast<int>(i));
+            }                
             this->SetCurrentLayer(static_cast<int>(i));
         }
     }

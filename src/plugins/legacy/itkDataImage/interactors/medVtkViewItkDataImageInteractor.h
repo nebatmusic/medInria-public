@@ -47,6 +47,12 @@ public:
 
     void createSlicingParam();
 
+    /**
+     * @brief getCurrentImageDataLayer return the layer of the current set image data
+     * @return unsigned int current number
+     */
+    unsigned int getCurrentImageDataLayer();
+
 public slots:
     virtual void setOpacity (double opacity);
     void moveToSlice(int slice);

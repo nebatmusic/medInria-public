@@ -74,12 +74,12 @@ public:
 
     static double MAXIMUM_GAP;
 
-    bool CanReadFile(const char*);
-    void ReadImageInformation();
+    bool CanReadFile(const char*)  override;
+    void ReadImageInformation()    override;
 
-    bool CanWriteFile(const char*);
-    void WriteImageInformation();
-    void Write(const void* buffer);
+    bool CanWriteFile(const char*) override;
+    void WriteImageInformation()   override;
+    void Write(const void* buffer) override;
 
     // DICOM related stuff
     std::string GetPatientName() const;
@@ -87,6 +87,7 @@ public:
     std::string GetPatientSex() const;
     std::string GetPatientAge() const;
     std::string GetStudyID() const;
+    std::string GetStudyInstanceUID() const;
     std::string GetPatientDOB() const;
     std::string GetStudyDescription() const;
     std::string GetSeriesDescription() const;
@@ -107,7 +108,7 @@ public:
     std::string GetPatientStatus() const;
 
     // new
-    std::string GetSeriesID() const;
+    std::string GetSeriesInstanceUID() const;
     std::string GetOrientation() const;
     std::string GetSeriesNumber() const;
     std::string GetSequenceName() const;

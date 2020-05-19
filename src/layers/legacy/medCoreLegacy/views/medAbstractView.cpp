@@ -315,7 +315,7 @@ void medAbstractView::setUpViewForThumbnail()
     if(!primaryInteractor)
     {
         QString msg = "Unable to find any current primary interactor for view "  + this->identifier();
-        dtkWarn() << msg;
+        qWarning() << msg;
     }
 
     else
@@ -443,8 +443,12 @@ QWidget* medAbstractView::mouseInteractionWidget()
     return d->mouseInteractionWidget;
 }
 
-
 QUndoStack* medAbstractView::undoStack() const
 {
     return d->undoStack;
+}
+
+QMainWindow* medAbstractView::mainWindow()
+{
+    return nullptr;
 }

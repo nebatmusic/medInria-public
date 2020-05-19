@@ -66,7 +66,7 @@ void medDatabaseControllerPrivate::buildMetaDataLookup()
 //Study Data
     metaDataLookup.insert(medMetaDataKeys::StudyDescription.key(),
         TableEntryList() << TableEntry(T_study, "name") );
-    metaDataLookup.insert(medMetaDataKeys::StudyDicomID.key(),
+    metaDataLookup.insert(medMetaDataKeys::StudyInstanceUID.key(),
         TableEntryList() << TableEntry(T_study, "uid") );
     metaDataLookup.insert(medMetaDataKeys::StudyID.key(),
         TableEntryList() << TableEntry(T_study, "studyId") );
@@ -77,7 +77,7 @@ void medDatabaseControllerPrivate::buildMetaDataLookup()
         TableEntryList() << TableEntry(T_series, "name") );
     metaDataLookup.insert(medMetaDataKeys::Size.key(),
         TableEntryList() << TableEntry(T_series, "size") );
-    metaDataLookup.insert(medMetaDataKeys::SeriesDicomID.key(),
+    metaDataLookup.insert(medMetaDataKeys::SeriesInstanceUID.key(),
         TableEntryList() << TableEntry(T_series, "uid") );
     metaDataLookup.insert(medMetaDataKeys::SeriesID.key(),
         TableEntryList() << TableEntry(T_series, "seriesId") );
@@ -423,41 +423,41 @@ bool medDatabaseController::createSeriesTable()
 {
     QSqlQuery query(this->database());
 
-    return query.prepare(
-                   "CREATE TABLE IF NOT EXISTS series ("
-                   " id       INTEGER      PRIMARY KEY,"
-                   " study    INTEGER," // FOREIGN KEY
-                   " size     INTEGER,"
-                   " name            TEXT,"
-                   " path            TEXT,"
-                   " uid             TEXT,"
-                   " seriesId        TEXT,"
-                   " orientation     TEXT,"
-                   " seriesNumber    TEXT,"
-                   " sequenceName    TEXT,"
-                   " sliceThickness  TEXT,"
-                   " rows            TEXT,"
-                   " columns         TEXT,"
-                   " thumbnail       TEXT,"
-                   " age             TEXT,"
-                   " description     TEXT,"
-                   " modality        TEXT,"
-                   " protocol        TEXT,"
-                   " comments        TEXT,"
-                   " status          TEXT,"
-                   " acquisitiondate TEXT,"
-                   " importationdate TEXT,"
-                   " referee         TEXT,"
-                   " performer       TEXT,"
-                   " institution     TEXT,"
-                   " report          TEXT,"
-                   " origin          TEXT,"
-                   " flipAngle       TEXT,"
-                   " echoTime        TEXT,"
-                   " repetitionTime  TEXT,"
-                   " acquisitionTime TEXT"
-                   ");"
-                   ) && EXEC_QUERY(query);
+    query.prepare(
+                "CREATE TABLE IF NOT EXISTS series ("
+                " id       INTEGER      PRIMARY KEY,"
+                " study    INTEGER," // FOREIGN KEY
+                " size     INTEGER,"
+                " name            TEXT,"
+                " path            TEXT,"
+                " uid             TEXT,"
+                " seriesId        TEXT,"
+                " orientation     TEXT,"
+                " seriesNumber    TEXT,"
+                " sequenceName    TEXT,"
+                " sliceThickness  TEXT,"
+                " rows            TEXT,"
+                " columns         TEXT,"
+                " thumbnail       TEXT,"
+                " age             TEXT,"
+                " description     TEXT,"
+                " modality        TEXT,"
+                " protocol        TEXT,"
+                " comments        TEXT,"
+                " status          TEXT,"
+                " acquisitiondate TEXT,"
+                " importationdate TEXT,"
+                " referee         TEXT,"
+                " performer       TEXT,"
+                " institution     TEXT,"
+                " report          TEXT,"
+                " origin          TEXT,"
+                " flipAngle       TEXT,"
+                " echoTime        TEXT,"
+                " repetitionTime  TEXT,"
+                " acquisitionTime TEXT"
+                ");"
+                ) && EXEC_QUERY(query);
 
     // Get all the information about the table columns
     query.prepare("PRAGMA table_info(series)");
@@ -471,6 +471,8 @@ bool medDatabaseController::createSeriesTable()
     this->addTextColumnToSeriesTableIfNeeded(query, "echoTime");
     this->addTextColumnToSeriesTableIfNeeded(query, "repetitionTime");
     this->addTextColumnToSeriesTableIfNeeded(query, "acquisitionTime");
+
+    return true;
 }
 
 void medDatabaseController::addTextColumnToSeriesTableIfNeeded(QSqlQuery query, QString columnName)

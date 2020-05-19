@@ -119,7 +119,7 @@ itkFiltersToolBox::itkFiltersToolBox(QWidget *parent)
     
     d->filters->addItems(filtersList);
 
-    QObject::connect ( d->filters, SIGNAL ( currentIndexChanged ( int ) ), this, SLOT ( onFiltersActivated ( int ) ) );
+    QObject::connect(d->filters, SIGNAL(currentIndexChanged(int)), this, SLOT(onFiltersActivated(int)), Qt::UniqueConnection);
 
     //Add filter widgets
     d->addFilterWidget = new QWidget(this);
@@ -276,31 +276,34 @@ itkFiltersToolBox::itkFiltersToolBox(QWidget *parent)
     d->thresholdFilterWidget = new QWidget(this);
 
     d->thresholdFilterValue = new medDoubleParameterL( tr("Value"), this);
-    d->thresholdFilterValue->setRange ( std::numeric_limits<double>::lowest() , std::numeric_limits<double>::max() );
-    d->thresholdFilterValue->setValue ( itkFiltersThresholdingProcess::defaultThreshold );
-    d->thresholdFilterValue->setObjectName("thresholdValue");
+    d->thresholdFilterValue->setToolTip(tr("Only keep values according to the threshold type"));
+    d->thresholdFilterValue->setRange(-10000, 10000);
+    d->thresholdFilterValue->setValue(itkFiltersThresholdingProcess::defaultThreshold);
+    d->thresholdFilterValue->setObjectName("thresholdFilterValue");
 
     d->thresholdLowerValue = new medDoubleParameterL( tr("Lower Value"), this);
-    d->thresholdLowerValue->setRange ( std::numeric_limits<double>::lowest() , std::numeric_limits<double>::max() );
+    d->thresholdLowerValue->setToolTip(tr("Choose the boundaries of your threshold"));
+    d->thresholdLowerValue->setRange(-10000, 10000);
     d->thresholdLowerValue->setValue ( itkFiltersThresholdingProcess::defaultLower );
-    d->thresholdLowerValue->setObjectName("lowerValue");
     d->thresholdLowerValue->setDecimals(10);
+    d->thresholdLowerValue->setObjectName("thresholdLowerValue");
 
     d->thresholdUpperValue = new medDoubleParameterL( tr("Upper Value"), this);
-    d->thresholdUpperValue->setRange ( std::numeric_limits<double>::lowest() , std::numeric_limits<double>::max() );
+    d->thresholdUpperValue->setToolTip(tr("Choose the boundaries of your threshold"));
+    d->thresholdUpperValue->setRange(-10000, 10000);
     d->thresholdUpperValue->setValue ( itkFiltersThresholdingProcess::defaultUpper );
-    d->thresholdUpperValue->setObjectName("upperValue");
     d->thresholdUpperValue->setDecimals(10);
+    d->thresholdUpperValue->setObjectName("thresholdUpperValue");
 
     QSignalMapper *signalMapper = new QSignalMapper(this);
     signalMapper->setMapping(d->thresholdLowerValue, 0);
     signalMapper->setMapping(d->thresholdUpperValue, 1);
     signalMapper->setMapping(d->thresholdFilterValue, 2);
 
-    connect(d->thresholdLowerValue, SIGNAL(valueChanged(double)), signalMapper, SLOT (map()));
-    connect(d->thresholdUpperValue, SIGNAL(valueChanged(double)), signalMapper, SLOT (map()));
-    connect(d->thresholdFilterValue, SIGNAL(valueChanged(double)), signalMapper, SLOT (map()));
-    connect(signalMapper, SIGNAL(mapped(int)),this, SLOT(updateClutEditorValue(int)));
+    connect(d->thresholdLowerValue,  SIGNAL(valueChanged(double)), signalMapper, SLOT (map()), Qt::UniqueConnection);
+    connect(d->thresholdUpperValue,  SIGNAL(valueChanged(double)), signalMapper, SLOT (map()), Qt::UniqueConnection);
+    connect(d->thresholdFilterValue, SIGNAL(valueChanged(double)), signalMapper, SLOT (map()), Qt::UniqueConnection);
+    connect(signalMapper, SIGNAL(mapped(int)),this, SLOT(updateClutEditorValue(int)), Qt::UniqueConnection);
 
     d->thresholdFilterValue2 = new QSpinBox;
     d->thresholdFilterValue2->setRange ( -10000, 10000 );
@@ -309,10 +312,10 @@ itkFiltersToolBox::itkFiltersToolBox(QWidget *parent)
 
     d->binaryThreshold = new QRadioButton(tr("Binarize Image"), this);
     d->binaryThreshold->setObjectName("binaryThresholdButton");
-    d->infoThreshold = new QLabel("Values equal to the threshold value are not set to Outside Value.");
+    d->infoThreshold = new QLabel("Values equal to the threshold value are not set to Outside Value");
     d->infoThreshold->setWordWrap(true);
     d->infoThreshold->setStyleSheet("font: italic");
-    connect(d->binaryThreshold, SIGNAL(toggled(bool)), this, SLOT(checkBinaryThreshold(bool)));
+    connect(d->binaryThreshold, SIGNAL(toggled(bool)), this, SLOT(checkBinaryThreshold(bool)), Qt::UniqueConnection);
 
     d->histogram = new QCheckBox(tr("Open Histogram"), this);
     d->histogram->setObjectName("histogram");
@@ -392,7 +395,7 @@ itkFiltersToolBox::itkFiltersToolBox(QWidget *parent)
 
     d->thresholdFilterWidget->setLayout ( thresholdFilterLayout );
 
-    connect(d->valueButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(updateThresholdToolboxBehaviour(int)));
+    connect(d->valueButtonGroup, SIGNAL(buttonClicked(int)), this, SLOT(updateThresholdToolboxBehaviour(int)), Qt::UniqueConnection);
     greaterButton->click();
     d->clutEditor = nullptr;
 
@@ -438,12 +441,12 @@ itkFiltersToolBox::itkFiltersToolBox(QWidget *parent)
     widget->setLayout(layout);
     this->addWidget(widget);
 
-    connect ( runButton, SIGNAL ( clicked() ), this, SLOT ( run() ) );
+    connect(runButton, SIGNAL(clicked()), this, SLOT(run()), Qt::UniqueConnection);
 
     if (this->selectorToolBox()) // empty in pipelines
     {
-        connect(this->selectorToolBox(), SIGNAL(inputChanged()), this, SLOT(update()));
         update();
+        connect(this->selectorToolBox(), SIGNAL(inputChanged()), this, SLOT(update()), Qt::UniqueConnection);
     }
 }
 
@@ -493,6 +496,7 @@ void itkFiltersToolBox::clear()
     d->maxColor = Qt::white;
     d->thresholdColor = Qt::black;
     d->minValueImage = d->maxValueImage = 0.;
+    d->process = nullptr;
 }
 
 void itkFiltersToolBox::update()
@@ -525,6 +529,11 @@ void itkFiltersToolBox::update()
         {
             d->minValueImage = statsProcess.output().at(0);
             d->maxValueImage = statsProcess.output().at(1);
+
+            // Threshold range update
+            d->thresholdFilterValue->setRange(d->minValueImage, d->maxValueImage);
+            d->thresholdLowerValue->setRange( d->minValueImage, d->maxValueImage);
+            d->thresholdUpperValue->setRange( d->minValueImage, d->maxValueImage);
         }
         d->intensityMinimumValue->setValue(d->minValueImage);
         d->intensityMaximumValue->setValue(d->maxValueImage);
@@ -538,6 +547,8 @@ void itkFiltersToolBox::update()
         {
             d->thresholdFilterValue->setValue((d->minValueImage+d->maxValueImage)/2);
         }
+
+        // Histogram
         d->histogram->setEnabled(true);
         updateHistogramView();
     }
@@ -579,9 +590,10 @@ int itkFiltersToolBox::setupSpinBoxValues(medAbstractData* data)
 void itkFiltersToolBox::setupItkAddProcess()
 {
     d->process = dtkAbstractProcessFactory::instance()->createSmartPointer ( "itkAddProcess" );
-    
+
     d->process->setInput(this->selectorToolBox()->data());
     d->process->setParameter(d->addFilterValue->value());
+
 }
 
 void itkFiltersToolBox::setupItkSubtractProcess()
@@ -667,8 +679,8 @@ void itkFiltersToolBox::setupItkThresholdingProcess()
 
         d->process->setInput ( this->selectorToolBox()->data() );
 
-        d->process->setParameter ( (int)d->thresholdFilterValue->value(), 0);
-        d->process->setParameter ( (int)d->thresholdFilterValue2->value(), 1);
+        d->process->setParameter ( static_cast<int>(d->thresholdFilterValue->value()),  0);
+        d->process->setParameter ( static_cast<int>(d->thresholdFilterValue2->value()), 1);
 
         d->process->setParameter ( d->thresholdLowerValue->value(), 0);
         d->process->setParameter ( d->thresholdUpperValue->value(), 1);
@@ -683,7 +695,7 @@ void itkFiltersToolBox::setupItkThresholdingProcess()
         d->process->setParameter ( d->thresholdFilterValue->value(), 0);
         d->process->setParameter ( d->thresholdLowerValue->value(), 1);
         d->process->setParameter ( d->thresholdUpperValue->value(), 2);
-        d->process->setParameter ( (double)d->thresholdFilterValue2->value(), 3);
+        d->process->setParameter ( static_cast<double>(d->thresholdFilterValue2->value()), 3);
     }
 }
 
@@ -749,15 +761,13 @@ void itkFiltersToolBox::run()
             break;
     }
 
-    if (! d->process)
+    if (d->process)
     {
-        return;
+        this->setToolBoxOnWaitStatus();
+        medRunnableProcess *runProcess = new medRunnableProcess;
+        runProcess->setProcess ( d->process );
+        this->addConnectionsAndStartJob(runProcess);
     }
-    this->setToolBoxOnWaitStatus();
-
-    medRunnableProcess *runProcess = new medRunnableProcess;
-    runProcess->setProcess ( d->process );
-    this->addConnectionsAndStartJob(runProcess);
 }
 
 void itkFiltersToolBox::updateClutEditorValue(int label)
@@ -844,7 +854,7 @@ void itkFiltersToolBox::updateClutEditorView()
             d->clutEditor->getScene()->table()->addVertex(new medClutEditorVertex( maxVal, maxCoord, maxColor, d->clutEditor->getScene()->table() ));
             d->clutEditor->getScene()->table()->addVertex(new medClutEditorVertex( value, coord, d->thresholdColor, d->clutEditor->getScene()->table() ));
 
-            connect(d->clutEditor->getScene()->table()->vertices().at(1)->getColorAction(), SIGNAL(triggered()), this, SLOT(setThresholdColor()));
+            connect(d->clutEditor->getScene()->table()->vertices().at(1)->getColorAction(), SIGNAL(triggered()), this, SLOT(setThresholdColor()), Qt::UniqueConnection);
 
             d->clutEditor->invertLUT(d->valueButtonGroup->checkedId()!=itkFiltersThresholdingProcess::upperButtonId);
         }
@@ -872,13 +882,16 @@ void itkFiltersToolBox::showHistogram(int state)
 
     if ( getWorkspace() != nullptr && getWorkspace()->tabbedViewContainers() != nullptr )
     {
-        if ( state==Qt::Checked )
+        // Opening the histogram could be long, disable the use of the toolbox to avoid problems
+        this->setToolBoxOnWaitStatusForNonRunnableProcess();
+
+        if ( state == Qt::Checked )
         {
             medAbstractView* medVtkView = dynamic_cast<medAbstractView*>(this->getWorkspace()->tabbedViewContainers()->getFirstSelectedContainerView());
             if (d->clutEditor == nullptr)
             {
                 d->clutEditor = new medClutEditorToolBox();
-                medVtkView->viewWidget()->layout()->addWidget(d->clutEditor);
+                medVtkView->mainWindow()->parentWidget()->layout()->addWidget(d->clutEditor);
                 d->clutEditor->forceLayer(0);
                 d->clutEditor->setData(selectorToolBox()->data());
                 d->clutEditor->setView(medVtkView);
@@ -909,6 +922,8 @@ void itkFiltersToolBox::showHistogram(int state)
                 d->clutEditor->hide();
             }
         }
+
+        this->setToolBoxOnReadyToUse();
     }
 }
 
@@ -942,7 +957,7 @@ void itkFiltersToolBox::addVertex()
 void itkFiltersToolBox::updateSliders()
 {
     QList<medClutEditorVertex*> &vertices = d->clutEditor->getScene()->table()->vertices();
-    std::vector<double> thresholdsValueList;
+
     if ( vertices.first()->value().x() != d->thresholdLowerValue->value() )
     {
         double lowerValue = vertices.first()->value().x();
@@ -1113,7 +1128,7 @@ void itkFiltersToolBox::checkBinaryThreshold(bool checked)
     {
         d->thresholdFilterValue->getLabel()->setText( tr ( "Value" ) );
         d->thresholdFilterValue->setValue ( itkFiltersThresholdingProcess::defaultThreshold );
-        d->infoThreshold->setText("Values equal to the threshold value are not set to OutsideValue." );
+        d->infoThreshold->setText("Values equal to the threshold value are not set to Outside Value." );
     }
 }
 

@@ -280,7 +280,7 @@ void medDatabaseView::onItemDoubleClicked(const QModelIndex& index)
 }
 
 /** Opens the currently selected item. */
-void medDatabaseView::onViewSelectedItemRequested(void)
+void medDatabaseView::onViewSelectedItemRequested()
 {
     // Called when the user right click->View in DB on a series/study
 
@@ -554,7 +554,7 @@ void medDatabaseView::onCreateStudyRequested(void)
             medData->setMetaData ( medMetaDataKeys::StudyDescription.key(), QStringList() << studyName );
             
             medData->setMetaData ( medMetaDataKeys::StudyID.key(), QStringList() << "0" );
-            medData->setMetaData ( medMetaDataKeys::StudyDicomID.key(), QStringList() << "" );
+            medData->setMetaData ( medMetaDataKeys::StudyInstanceUID.key(), QStringList() << "" );
 
             medDataManager::instance()->importData(medData, editDialog.isPersistent());
         }

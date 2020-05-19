@@ -54,6 +54,7 @@ vtkStandardNewMacro( vtkMetaSurfaceMesh );
 
 //----------------------------------------------------------------------------
 vtkMetaSurfaceMesh::vtkMetaSurfaceMesh()
+    : vtkMetaDataSet()
 {
   this->Type = vtkMetaDataSet::VTK_META_SURFACE_MESH;
 }
@@ -335,7 +336,14 @@ unsigned int vtkMetaSurfaceMesh::CanReadFile (const char* filename)
 {
 
   if (vtkMetaSurfaceMesh::IsMeshExtension(vtksys::SystemTools::GetFilenameLastExtension(filename).c_str()))
-    return vtkMetaSurfaceMesh::FILE_IS_MESH;
+  {
+    // medit .mesh format must have 'MeshVersionFormatted' as header
+    if (vtkMetaDataSet::IsMeditFormat(filename))
+    {
+      return vtkMetaSurfaceMesh::FILE_IS_MESH;
+    }
+    return 0;
+  }
 
   if (vtkMetaSurfaceMesh::IsOBJExtension(vtksys::SystemTools::GetFilenameLastExtension(filename).c_str()))
   {

@@ -2,7 +2,7 @@
 
  medInria
 
- Copyright (c) INRIA 2013 - 2018. All rights reserved.
+ Copyright (c) INRIA 2013 - 2020. All rights reserved.
  See LICENSE.txt for details.
  
   This software is distributed WITHOUT ANY WARRANTY; without even
@@ -15,18 +15,12 @@
 
 #include <medVtkInriaExport.h>
 
-#include <vector>
-
 #include <vtkImageView.h>
-#include <vtkOrientedBoxWidget.h>
-
-#include <vtkPlaneWidget.h>
-#include <vtkVolume.h>
 #include <vtkImageView3DCroppingBoxCallback.h>
 #include <vtkOrientationMarkerWidget.h>
+#include <vtkOrientedBoxWidget.h>
+#include <vtkPlaneWidget.h>
 #include <vtkVolumeProperty.h>
-#include <vtkSmartPointer.h>
-
 
 class vtkVolume;
 class vtkPiecewiseFunction;
@@ -52,7 +46,7 @@ class vtkProp3DCollection;
 
    This class allows to view 3D images. Images have to be
    vtkImageData.
-   volume rendering and mulptiplane reconstructions are provided
+   volume rendering and multiplane reconstructions are provided
    remote plan can also be used, so can be an orientation cube, ...
 */
 
@@ -65,9 +59,9 @@ public:
 
     vtkMTimeType GetMTime();
 
-    // Rendeing Modes available.
+    // Rendering Modes available.
     // PLANAR_RENDERING will render every vtkImageActor instance added with Add2DPhantom()
-    // whereas VOLUME_RENDERING will render the volume added with SetInput().
+    // whereas VOLUME_RENDERING will render the volume added with SetInputData().
     //BTX
     enum RenderingModeIds
     {
@@ -147,8 +141,12 @@ public:
     virtual void SetCroppingMode(unsigned int);
     virtual unsigned int GetCroppingMode ();
 
-    virtual void SetInput (vtkAlgorithmOutput* pi_poVtkAlgoOutput, vtkMatrix4x4 *matrix = 0, int layer = 0);
-    //virtual void AddInput (vtkImageData* input, vtkMatrix4x4 *matrix = 0);
+    virtual void SetInput        (vtkAlgorithmOutput* pi_poVtkAlgoOutput, vtkMatrix4x4 *matrix = nullptr, int layer = 0);
+    virtual void SetInput        (vtkActor *actor, int layer = 0, vtkMatrix4x4 *matrix = nullptr, const int imageSize[3] = nullptr, const double imageSpacing[] = nullptr, const double imageOrigin[] = nullptr);
+    static vtkActor* DataSetToActor(vtkPointSet* arg, vtkProperty* prop = nullptr);
+    virtual vtkActor* AddDataSet (vtkPointSet* arg, vtkProperty* prop = NULL);
+    virtual void RemoveDataSet   (vtkPointSet* arg);
+
     virtual void SetOrientationMatrix (vtkMatrix4x4* matrix);
 
     using vtkImageView::SetColorWindow;
@@ -170,7 +168,6 @@ public:
     virtual void SetVisibility(int visibility, int layer);
     virtual int  GetVisibility(int layer) const;
 
-
     virtual void SetShowActorX (unsigned int);
     vtkGetMacro (ShowActorX, unsigned int);
     vtkBooleanMacro (ShowActorX, unsigned int);
@@ -191,9 +188,6 @@ public:
 
     virtual void InstallInteractor();
     virtual void UnInstallInteractor();
-
-    virtual vtkActor* AddDataSet (vtkPointSet* arg, vtkProperty* prop = NULL);
-    virtual void RemoveDataSet (vtkPointSet* arg);
 
     virtual void AddLayer (int layer);
     virtual int GetNumberOfLayers() const;
@@ -223,14 +217,17 @@ protected:
     vtkImageView3D();
     ~vtkImageView3D();
 
+    void SetFirstLayer(vtkAlgorithmOutput *pi_poInputAlgoImg, vtkMatrix4x4 *matrix = nullptr, int layer = 0);
+    void SetOtherLayer(vtkAlgorithmOutput* pi_poVtkAlgoOutput, vtkMatrix4x4 *matrix = nullptr, int layer = 0);
+    bool is3D();
+
     virtual void InstallPipeline();
     virtual void UnInstallPipeline();
 
     virtual void SetupVolumeRendering();
     virtual void SetupWidgets();
     virtual void UpdateVolumeFunctions(int layer);
-    virtual void ApplyColorTransferFunction(vtkScalarsToColors * colors,
-                                            int layer);
+    virtual void ApplyColorTransferFunction(vtkScalarsToColors * colors, int layer);
     virtual void InternalUpdate();
 
     vtkImage3DDisplay * GetImage3DDisplayForLayer(int layer) const;
@@ -279,15 +276,18 @@ protected:
     unsigned int ShowActorY;
     unsigned int ShowActorZ;
 
-    int          LastNodeIndex;
+    int LastNodeIndex;
 
-    int          CroppingMode;
+    int  CroppingMode;
 
     double Opacity;
     int Visibility;
 
-    struct LayerInfo {
+    struct LayerInfo 
+    {
         vtkSmartPointer<vtkImage3DDisplay> ImageDisplay;
+        vtkSmartPointer<vtkDataSet>        DataSet;
+        vtkSmartPointer<vtkActor>          Actor;
     };
 
     vtkSmartPointer<vtkImageMapToColors>        PlanarWindowLevelX;
@@ -300,9 +300,8 @@ protected:
 
 private:
     vtkImageView3D(const vtkImageView3D&);  // Not implemented.
-    void operator=(const vtkImageView3D&);    // Not implemented.
-
+    void operator=(const vtkImageView3D&);  // Not implemented.
+    
+    void  initializeTransferFunctions(int pi_iLayer);
 };
-
-
 

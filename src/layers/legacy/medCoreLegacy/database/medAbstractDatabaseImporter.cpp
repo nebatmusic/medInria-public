@@ -192,9 +192,9 @@ void medAbstractDatabaseImporter::importFile ( void )
     bool atLeastOneImportSucceeded = false;
     bool atLeastOneImportError = false;
 
-    foreach ( QString file, fileList )
+    for( QString file: fileList )
     {
-        if ( d->isCancelled ) // check if user cancelled the process
+        if ( d->isCancelled ) // check if user canceled the process
             break;
 
         emit progress ( this, ( ( qreal ) currentFileNumber/ ( qreal ) fileList.count() ) * 50.0 ); //TODO: reading and filtering represents 50% of the importing process?
@@ -235,7 +235,7 @@ void medAbstractDatabaseImporter::importFile ( void )
 
             medData->setMetaData ( medMetaDataKeys::PatientID.key(), QStringList() << patientID );
 
-            tmpSeriesUid = medMetaDataKeys::SeriesDicomID.getFirstValue(medData);
+            tmpSeriesUid = medMetaDataKeys::SeriesInstanceUID.getFirstValue(medData);
 
             if (tmpSeriesUid != currentSeriesUid)
             {
@@ -580,18 +580,18 @@ void medAbstractDatabaseImporter::populateMissingMetadata ( medAbstractData* med
     if ( !medData->hasMetaData ( medMetaDataKeys::StudyID.key() ) )
         medData->setMetaData ( medMetaDataKeys::StudyID.key(), QStringList() << "0" );
 
-    if ( !medData->hasMetaData ( medMetaDataKeys::StudyDicomID.key() ) )
-        medData->setMetaData ( medMetaDataKeys::StudyDicomID.key(), QStringList() << "" );
+    if ( !medData->hasMetaData ( medMetaDataKeys::SeriesInstanceUID.key() ) )
+        medData->setMetaData ( medMetaDataKeys::SeriesInstanceUID.key(), QStringList() << "" );
 
     QString generatedSeriesId = QUuid::createUuid().toString().replace("{","").replace("}","");
 
     if ( !medData->hasMetaData ( medMetaDataKeys::SeriesID.key() ) )
       medData->setMetaData ( medMetaDataKeys::SeriesID.key(), QStringList() << generatedSeriesId);
 
-    QString generatedSeriesDicomID = QUuid::createUuid().toString().replace("{","").replace("}","");
+    QString generatedSeriesInstanceUID = QUuid::createUuid().toString().replace("{","").replace("}","");
 
-    if ( !medData->hasMetaData ( medMetaDataKeys::SeriesDicomID.key() ) )
-        medData->setMetaData ( medMetaDataKeys::SeriesDicomID.key(), QStringList() << generatedSeriesDicomID );
+    if ( !medData->hasMetaData ( medMetaDataKeys::SeriesInstanceUID.key() ) )
+        medData->setMetaData ( medMetaDataKeys::SeriesInstanceUID.key(), QStringList() << generatedSeriesInstanceUID );
 
     if ( !medData->hasMetaData ( medMetaDataKeys::Orientation.key() ) )
         medData->setMetaData ( medMetaDataKeys::Orientation.key(), QStringList() << "" );
@@ -722,7 +722,8 @@ dtkSmartPointer<dtkAbstractDataReader> medAbstractDatabaseImporter::getSuitableR
         dataReader = medAbstractDataFactory::instance()->readerSmartPointer(readers[i]);
         dataReader->enableDeferredDeletion(false);
 
-        if (dataReader->canRead(filename)) {
+        if (dataReader->canRead(filename))
+        {
             return dataReader;
         }
     }
@@ -978,7 +979,7 @@ QString medAbstractDatabaseImporter::generateUniqueVolumeId ( const medAbstractD
     // Get all the information from the medAbstractData metadata.
     // This information will then be passed to the database.
     QString patientName = medMetaDataKeys::PatientName.getFirstValue(medData);
-    QString studyDicomId = medMetaDataKeys::StudyDicomID.getFirstValue(medData);
+    QString studyDicomId = medMetaDataKeys::StudyInstanceUID.getFirstValue(medData);
 
     // We don't use the seriesDicomID, too unreliable : you can have images part
     // of the same series with different UIDs, and different volumes within the
