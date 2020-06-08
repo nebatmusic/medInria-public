@@ -159,12 +159,14 @@ int medDatabaseImporter::getOrCreateStudy ( const medAbstractData* medData, QSql
 
     QString studyName   = medMetaDataKeys::StudyDescription.getFirstValue(medData).simplified();
     QString studyUid    = medMetaDataKeys::StudyInstanceUID.getFirstValue(medData);
-    QString studyId    = medMetaDataKeys::StudyID.getFirstValue(medData);
+    QString studyId     = medMetaDataKeys::StudyID.getFirstValue(medData);
 
     QString seriesName   = medMetaDataKeys::SeriesDescription.getFirstValue(medData).simplified();
 
     if( studyName=="EmptyStudy" && seriesName=="EmptySeries" )
+    {
         return studyDbId;
+    }
 
     query.prepare ( "SELECT id FROM study WHERE patient = :patient AND name = :studyName AND uid = :studyUid" );
     query.bindValue ( ":patient", patientDbId );

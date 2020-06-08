@@ -40,13 +40,13 @@ vtkStandardNewMacro( vtkMetaVolumeMesh );
 
 //----------------------------------------------------------------------------
 vtkMetaVolumeMesh::vtkMetaVolumeMesh()
-  : vtkMetaDataSet()
+    : vtkMetaDataSet()
 {
   this->Type = vtkMetaDataSet::VTK_META_VOLUME_MESH;
 }
 
 vtkMetaVolumeMesh::vtkMetaVolumeMesh(const vtkMetaVolumeMesh& other)
-  : vtkMetaDataSet(other)
+    : vtkMetaDataSet(other)
 {
 }
 
@@ -233,7 +233,6 @@ unsigned int vtkMetaVolumeMesh::CanReadFile (const char* filename)
         return vtkMetaVolumeMesh::FILE_IS_MESH;
       }
     }
-
     return 0;
   }
 

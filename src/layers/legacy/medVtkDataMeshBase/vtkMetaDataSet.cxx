@@ -722,6 +722,7 @@ void vtkMetaDataSet::SetScalarNullValue(const char * arrayName, double nullValue
 //----------------------------------------------------------------------------
 double* vtkMetaDataSet::GetScalarRange(QString attributeName)
 {
+    // TODO: evil, and prone to memleak. Should pass the range array as parameter
     double* val = new double[2];
     val[0] = VTK_DOUBLE_MAX;
     val[1] = VTK_DOUBLE_MIN;

@@ -744,4 +744,3 @@ double* vtkMetaDataSetSequence::GetScalarRange(QString attributeName)
 
     return val;
 }
-

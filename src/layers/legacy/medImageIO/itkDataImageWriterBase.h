@@ -41,6 +41,8 @@ protected:
 
     itk::ImageIOBase::Pointer io;
 
+    void encapsulateSharedMetaData(itk::MetaDataDictionary& dict);
+
 private:
 
     template <unsigned DIM,typename T>

@@ -3,10 +3,15 @@ function(music_plugins_project)
     set(external_project music-plugins)
 
     list(APPEND ${external_project}_dependencies
-        medInria
         dtk
         ITK
         VTK
+        DCMTK
+        medInria
+        jsoncons
+        asio
+        websocketpp
+        openssl
         gvirtualXRay
         )
 
@@ -32,8 +37,17 @@ function(music_plugins_project)
             -Ddtk_DIR:FILEPATH=${dtk_DIR}
             -DITK_DIR:FILEPATH=${ITK_DIR}
             -DVTK_DIR:FILEPATH=${VTK_DIR}
+            -DDCMTK_DIR:FILEPATH=${DCMTK_DIR}
             -DmedInria_DIR:FILEPATH=${medInria_DIR}
             -DBoost_INCLUDE_DIR=${Boost_INCLUDE_DIR}
+            -Djsoncons_DIR:FILEPATH=${jsoncons_DIR}
+            -Dasio_DIR:FILEPATH=${asio_DIR}
+            -Dwebsocketpp_DIR:FILEPATH=${websocketpp_DIR}
+            -Dopenssl_DIR:FILEPATH=${openssl_DIR}
+            -DgVirtualXRay_DIR:FILEPATH=${gvirtualXRay_DIR}
+            -Deigen_DIR:FILEPATH=${eigen_INCLUDE_DIR}
+            -Dqwt_INCLUDE_DIR:FILEPATH=${qwt_INCLUDE_DIR}
+            -Dqwt_DIR:FILEPATH=${qwt_DIR}
             )
 
         epComputPath(${external_project})

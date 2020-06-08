@@ -18,6 +18,7 @@
 #include <dtkLog/dtkLog.h>
 
 #include <medAbstractImageData.h>
+#include <medMetaDataKeys.h>
 
 #include <itkImage.h>
 #include <itkImageFileWriter.h>
@@ -44,19 +45,30 @@ bool itkDataImageWriterBase::canWrite(const QString& path)
 }
 
 template <unsigned DIM,typename T>
-bool itkDataImageWriterBase::write_image(const QString& path,const char* type) {
+bool itkDataImageWriterBase::write_image(const QString& path,const char* type)
+{
     medAbstractData* medData = dynamic_cast<medAbstractData*>(this->data());
-    if (medData && medData->identifier()!=type)
+    if (medData && medData->identifier() != type)
+    {
         return false;
+    }
 
     typedef itk::Image<T,DIM> Image;
     typename Image::Pointer image = dynamic_cast<Image*>((itk::Object*)(this->data()->output()));
     if (image.IsNull())
+    {
         return false;
-    if (medData->hasMetaData(medAbstractImageData::PixelMeaningMetaData)) {
-        itk::MetaDataDictionary& dict = image->GetMetaDataDictionary();
-        itk::EncapsulateMetaData(dict,"intent_name",medData->metadata(medAbstractImageData::PixelMeaningMetaData));
     }
+
+    itk::MetaDataDictionary& dict = image->GetMetaDataDictionary();
+    if (medData->hasMetaData(medAbstractImageData::PixelMeaningMetaData))
+    {
+        itk::EncapsulateMetaData(dict, "intent_name", medData->metadata(medAbstractImageData::PixelMeaningMetaData));
+    }
+
+    // save relevant metaDataKeys
+    encapsulateSharedMetaData(dict);
+
     typename itk::ImageFileWriter<Image>::Pointer writer = itk::ImageFileWriter <Image>::New();
     writer->SetImageIO (this->io);
     writer->UseCompressionOn();
@@ -65,6 +77,39 @@ bool itkDataImageWriterBase::write_image(const QString& path,const char* type) {
     writer->Update();
 
     return true;
+}
+
+void itkDataImageWriterBase::encapsulateSharedMetaData(itk::MetaDataDictionary& dict)
+{
+    itk::Object* itkImage = static_cast<itk::Object*>(data()->data());
+    itk::MetaDataDictionary& metaDataDictionary = itkImage->GetMetaDataDictionary();
+
+    foreach (QString metaDataKey, data()->metaDataList())
+    {
+        if (medMetaDataKeys::Key::fromKeyName(metaDataKey.toStdString().c_str()))
+        {
+            std::string key;
+
+            if (metaDataKey == medAbstractImageData::PixelMeaningMetaData)
+            {
+                key = "intent_name";
+            }
+            else if (metaDataKey == medMetaDataKeys::Modality.key())
+            {
+                key = "MED_MODALITY";
+            }
+            else if (metaDataKey == medMetaDataKeys::Orientation.key())
+            {
+                key = "MED_ORIENTATION";
+            }
+            else
+            {
+                key = metaDataKey.toStdString().c_str();
+            }
+
+            itk::EncapsulateMetaData(metaDataDictionary, key, data()->metadata(metaDataKey).toStdString());
+        }
+    }
 }
 
 bool itkDataImageWriterBase::write(const QString& path)

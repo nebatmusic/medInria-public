@@ -91,7 +91,10 @@ QStringList medUtilities::metaDataKeysToCopyForDerivedData(medAbstractData* deri
              << medMetaDataKeys::ZSpacing.key()
              << medMetaDataKeys::NumberOfComponents.key()
              << medMetaDataKeys::ComponentType.key()
-             << medMetaDataKeys::PixelType.key();
+             << medMetaDataKeys::PixelType.key()
+             << medMetaDataKeys::PatientPosition.key()
+             << medMetaDataKeys::PatientOrientation.key()
+             << medMetaDataKeys::ImageType.key();
     }
 
     return keys;

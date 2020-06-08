@@ -85,6 +85,10 @@ namespace medMetaDataKeys {
     MEDCORELEGACY_EXPORT const Key ImageID("ImageID");
     MEDCORELEGACY_EXPORT const Key ThumbnailPath("ThumbnailPath", "Thumbnail Path");
 
+    MEDCORELEGACY_EXPORT const Key PatientOrientation("PatientOrientation", "Patient Orientation");
+    MEDCORELEGACY_EXPORT const Key PatientPosition("PatientPosition", "Patient Position");
+    MEDCORELEGACY_EXPORT const Key ImageType("ImageType", "Image Type");
+
     // MR Image
     MEDCORELEGACY_EXPORT const Key FlipAngle("FlipAngle");
     MEDCORELEGACY_EXPORT const Key EchoTime("EchoTime");

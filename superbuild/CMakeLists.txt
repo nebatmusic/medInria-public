@@ -21,9 +21,9 @@ find_package(Qt5 REQUIRED COMPONENTS
              Gui
              Network
              OpenGL
-             Sql                                                                                                                       
-	     Widgets                                                                                                                    
-	     Xml
+             Sql
+             Widgets 
+	           Xml
              Test
              Quick
              )
@@ -59,12 +59,12 @@ list(APPEND external_projects
      jsoncons
      asio
      websocketpp
+     openssl
      eigen
      gvirtualXRay
      qwt
      mmg
      tetgen
-     #openssl
      )
 
 if (USE_DTKIMAGING)
