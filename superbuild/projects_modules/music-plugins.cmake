@@ -12,7 +12,6 @@ function(music_plugins_project)
         asio
         websocketpp
         openssl
-        gvirtualXRay
         )
 
     EP_Initialisation(${external_project}
@@ -44,7 +43,6 @@ function(music_plugins_project)
             -Dasio_DIR:FILEPATH=${asio_DIR}
             -Dwebsocketpp_DIR:FILEPATH=${websocketpp_DIR}
             -Dopenssl_DIR:FILEPATH=${openssl_DIR}
-            -DgVirtualXRay_DIR:FILEPATH=${gvirtualXRay_DIR}
             -Deigen_DIR:FILEPATH=${eigen_INCLUDE_DIR}
             -Dqwt_INCLUDE_DIR:FILEPATH=${qwt_INCLUDE_DIR}
             -Dqwt_DIR:FILEPATH=${qwt_DIR}

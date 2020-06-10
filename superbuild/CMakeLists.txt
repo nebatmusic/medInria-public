@@ -61,7 +61,6 @@ list(APPEND external_projects
      websocketpp
      openssl
      eigen
-     gvirtualXRay
      qwt
      mmg
      tetgen
