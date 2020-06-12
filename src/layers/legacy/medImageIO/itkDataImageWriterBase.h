@@ -40,13 +40,16 @@ public slots:
 protected:
 
     itk::ImageIOBase::Pointer io;
+    QHash<QString, std::string> medKeyToItkKey;
 
     void encapsulateSharedMetaData(itk::MetaDataDictionary& dict);
+    std::string convertMedKeyToItkKey(QString medKey);
 
 private:
 
     template <unsigned DIM,typename T>
     bool write_image(const QString& path,const char* type);
+
 };
 
 

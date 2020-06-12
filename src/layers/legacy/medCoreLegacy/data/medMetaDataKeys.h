@@ -154,6 +154,17 @@ namespace medMetaDataKeys {
     extern MEDCORELEGACY_EXPORT const Key ImageID;
     extern MEDCORELEGACY_EXPORT const Key ImageType;
     extern MEDCORELEGACY_EXPORT const Key ThumbnailPath;
+    extern MEDCORELEGACY_EXPORT const Key AcquisitionNumber;
+
+    // Frame of reference
+    extern MEDCORELEGACY_EXPORT const Key FrameOfReferenceUID;
+    extern MEDCORELEGACY_EXPORT const Key PositionReferenceIndicator;
+
+    // EQUIPEMENT
+    extern MEDCORELEGACY_EXPORT const Key Manufacturer;
+
+    // CT
+    extern MEDCORELEGACY_EXPORT const Key KVP;
 
     // MR Image
     extern MEDCORELEGACY_EXPORT const Key FlipAngle;

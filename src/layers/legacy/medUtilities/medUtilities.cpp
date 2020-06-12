@@ -94,7 +94,16 @@ QStringList medUtilities::metaDataKeysToCopyForDerivedData(medAbstractData* deri
              << medMetaDataKeys::PixelType.key()
              << medMetaDataKeys::PatientPosition.key()
              << medMetaDataKeys::PatientOrientation.key()
-             << medMetaDataKeys::ImageType.key();
+             << medMetaDataKeys::ImageType.key()
+             << medMetaDataKeys::AcquisitionNumber.key()
+             << medMetaDataKeys::FrameOfReferenceUID.key()
+             << medMetaDataKeys::PositionReferenceIndicator.key()
+             << medMetaDataKeys::FrameOfReferenceUID.key()
+             << medMetaDataKeys::Manufacturer.key()
+             << medMetaDataKeys::KVP.key()
+             << medMetaDataKeys::FlipAngle.key()
+             << medMetaDataKeys::EchoTime.key()
+             << medMetaDataKeys::RepetitionTime.key();
     }
 
     return keys;

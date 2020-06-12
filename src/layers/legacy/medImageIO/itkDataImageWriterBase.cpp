@@ -30,6 +30,10 @@
 itkDataImageWriterBase::itkDataImageWriterBase()
 {
     this->io = 0;
+
+    this->medKeyToItkKey[medAbstractImageData::PixelMeaningMetaData] = "intent_name";
+    this->medKeyToItkKey[medMetaDataKeys::Modality.key()] = "MED_MODALITY";
+    this->medKeyToItkKey[medMetaDataKeys::Orientation.key()] = "MED_ORIENTATION";
 }
 
 itkDataImageWriterBase::~itkDataImageWriterBase()
@@ -79,6 +83,21 @@ bool itkDataImageWriterBase::write_image(const QString& path,const char* type)
     return true;
 }
 
+std::string itkDataImageWriterBase::convertMedKeyToItkKey(QString medKey)
+{
+    std::string itkKey;
+    if (this->medKeyToItkKey.contains(medKey))
+    {
+        itkKey = this->medKeyToItkKey[medKey];
+    }
+    else
+    {
+        itkKey = medKey.toStdString().c_str();
+    }
+
+    return itkKey;
+}
+
 void itkDataImageWriterBase::encapsulateSharedMetaData(itk::MetaDataDictionary& dict)
 {
     itk::Object* itkImage = static_cast<itk::Object*>(data()->data());
@@ -88,25 +107,7 @@ void itkDataImageWriterBase::encapsulateSharedMetaData(itk::MetaDataDictionary& 
     {
         if (medMetaDataKeys::Key::fromKeyName(metaDataKey.toStdString().c_str()))
         {
-            std::string key;
-
-            if (metaDataKey == medAbstractImageData::PixelMeaningMetaData)
-            {
-                key = "intent_name";
-            }
-            else if (metaDataKey == medMetaDataKeys::Modality.key())
-            {
-                key = "MED_MODALITY";
-            }
-            else if (metaDataKey == medMetaDataKeys::Orientation.key())
-            {
-                key = "MED_ORIENTATION";
-            }
-            else
-            {
-                key = metaDataKey.toStdString().c_str();
-            }
-
+            std::string key = convertMedKeyToItkKey(metaDataKey);
             itk::EncapsulateMetaData(metaDataDictionary, key, data()->metadata(metaDataKey).toStdString());
         }
     }

@@ -417,9 +417,17 @@ bool itkDCMTKDataImageReader::readInformation(const QStringList& paths)
         // Patient orientation
         std::string patientOrient = d->io->GetMetaDataValueString("(0020,0020)", 0);
         medData->setMetaData(medMetaDataKeys::PatientOrientation.key(), patientOrient.c_str());
+
         // Image Type
-        std::string imageType = d->io->GetMetaDataValueString("(0008,0008)", 0);
-        medData->setMetaData(medMetaDataKeys::ImageType.key(), imageType.c_str());
+        QString imageType = QString::fromStdString(d->io->GetMetaDataValueString("(0008,0008)", 0));
+        // it seems '\' characters are replaced by whitespaces. This is not correct
+        // for this tag.
+        imageType = imageType.replace(' ', "\\");
+        medData->setMetaData(medMetaDataKeys::ImageType.key(), imageType.toStdString().c_str());
+
+        // Acquisition number
+        std::string acquisitionNumber = d->io->GetMetaDataValueString("(0020,0012)", 0);
+        medData->setMetaData(medMetaDataKeys::AcquisitionNumber.key(), acquisitionNumber.c_str());
 
         // Add Origin
         QString origin = "";
@@ -462,10 +470,29 @@ bool itkDCMTKDataImageReader::readInformation(const QStringList& paths)
         //ImageID
         //ThumbnailPath
 
-        // MR Image
-        medData->setMetaData(medMetaDataKeys::FlipAngle.key(),      d->io->GetFlipAngle().c_str());
-        medData->setMetaData(medMetaDataKeys::EchoTime.key(),       d->io->GetEchoTime().c_str());
-        medData->setMetaData(medMetaDataKeys::RepetitionTime.key(), d->io->GetRepetitionTime().c_str());
+        QString modality = medData->metadata(medMetaDataKeys::Modality.key());
+        if (modality.contains("CT"))
+        {
+            std::string kvp = d->io->GetMetaDataValueString("(0018,0060)", 0 );
+            medData->setMetaData(medMetaDataKeys::KVP.key(), kvp.c_str());
+        }
+        else if (modality.contains("MR"))
+        {
+            // MR Image
+            medData->setMetaData(medMetaDataKeys::FlipAngle.key(), d->io->GetFlipAngle().c_str());
+            medData->setMetaData(medMetaDataKeys::EchoTime.key(), d->io->GetEchoTime().c_str());
+            medData->setMetaData(medMetaDataKeys::RepetitionTime.key(), d->io->GetRepetitionTime().c_str());
+        }
+
+        // Frame of reference
+        std::string frameOfRef = d->io->GetMetaDataValueString("(0020,0052)", 0);
+        medData->setMetaData(medMetaDataKeys::FrameOfReferenceUID.key(), frameOfRef.c_str());
+        std::string posRefIndicator = d->io->GetMetaDataValueString("(0020,1040)", 0);
+        medData->setMetaData(medMetaDataKeys::PositionReferenceIndicator.key(), posRefIndicator.c_str());
+
+        // Equipement
+        std::string manufacturer = d->io->GetMetaDataValueString("(0008,0070)", 0);
+        medData->setMetaData(medMetaDataKeys::Manufacturer.key(), manufacturer.c_str());
     }
     else
     {

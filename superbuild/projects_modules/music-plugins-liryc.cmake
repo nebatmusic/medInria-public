@@ -35,6 +35,7 @@ if (NOT USE_SYSTEM_${external_project})
         -Ddtk_DIR:FILEPATH=${dtk_DIR}
         -DITK_DIR:FILEPATH=${ITK_DIR}
         -DVTK_DIR:FILEPATH=${VTK_DIR}
+        -DDCMTK_DIR:FILEPATH=${DCMTK_DIR}
         -DEIGEN_INCLUDE_DIR:FILEPATH=${eigen_INCLUDE_DIR}
         -DMMG_INCDIR:FILEPATH=${mmg_INCDIR}
         -DMMG_LIBDIR:FILEPATH=${mmg_LIBDIR}
