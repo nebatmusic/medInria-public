@@ -21,6 +21,7 @@
 #include <dtkCoreSupport/dtkAbstractObject.h>
 
 #include <QMouseEvent>
+#include <QWheelEvent>
 
 #include <medCoreLegacyExport.h>
 
@@ -30,6 +31,7 @@ class medAbstractViewScene;
 class medSegmentationSelectorToolBox;
 class QMouseEvent;
 class QGraphicsSceneMouseEvent;
+class QGraphicsSceneWheelEvent;
 
 /** class medViewEventFilter
  * This class can be added as an EventFilter on a medAbstractView.
@@ -60,12 +62,12 @@ protected:
     virtual bool mousePressEvent( medAbstractView *view, QMouseEvent *mouseEvent );
     virtual bool mouseReleaseEvent( medAbstractView *view, QMouseEvent *mouseEvent );
     virtual bool mouseMoveEvent( medAbstractView *view, QMouseEvent *mouseEvent );
-    virtual bool mouseWheelEvent( medAbstractView *view, QMouseEvent * mouseEvent );
+    virtual bool mouseWheelEvent( medAbstractView *view, QWheelEvent *wheelEvent );
 
     virtual bool mousePressEvent( medAbstractView *view, QGraphicsSceneMouseEvent *mouseEvent );
     virtual bool mouseReleaseEvent( medAbstractView *view, QGraphicsSceneMouseEvent *mouseEvent );
     virtual bool mouseMoveEvent( medAbstractView *view, QGraphicsSceneMouseEvent *mouseEvent );
-    virtual bool mouseWheelEvent( medAbstractView *view, QGraphicsSceneMouseEvent *mouseEvent );
+    virtual bool mouseWheelEvent( medAbstractView *view, QGraphicsSceneWheelEvent *wheelEvent );
 
     static QObject * objectToFilter( medAbstractView * view );
 

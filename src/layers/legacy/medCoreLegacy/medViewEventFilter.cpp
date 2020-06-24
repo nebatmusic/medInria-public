@@ -21,6 +21,7 @@
 #include <QObject>
 #include <QEvent>
 #include <QGraphicsSceneMouseEvent>
+#include <QGraphicsSceneWheelEvent>
 
 // /////////////////////////////////////////////////////////////////
 // medViewSegmentationPrivate
@@ -98,12 +99,12 @@ bool medViewEventFilter::mouseMoveEvent( medAbstractView *view, QMouseEvent *mou
     return false;
 }
 
-bool medViewEventFilter::mouseWheelEvent( medAbstractView *view, QMouseEvent *mouseEvent )
+bool medViewEventFilter::mouseWheelEvent( medAbstractView *view, QWheelEvent *wheelEvent )
 {
     return false;
 }
 
-bool medViewEventFilter::mouseWheelEvent( medAbstractView *view, QGraphicsSceneMouseEvent *mouseEvent )
+bool medViewEventFilter::mouseWheelEvent( medAbstractView *view, QGraphicsSceneWheelEvent *mouseEvent )
 {
     return false;
 }
@@ -152,6 +153,11 @@ bool medViewEventFilter::eventFilter( QObject *obj, QEvent *event )
         {
             QMouseEvent* mouseEvent = static_cast<QMouseEvent *>(event);
             return this->mouseReleaseEvent( view, mouseEvent );
+        }
+    case ( QEvent::Wheel ) :
+        {
+            QWheelEvent* wheelEvent = static_cast<QWheelEvent *>(event);
+            return this->mouseWheelEvent( view, wheelEvent );
         }
     default:
         {
