@@ -12,6 +12,10 @@ function(music_plugins_project)
         asio
         websocketpp
         openssl
+        mmg
+        tetgen
+        eigen
+        qwt
         )
 
     EP_Initialisation(${external_project}
@@ -43,9 +47,14 @@ function(music_plugins_project)
             -Dasio_DIR:FILEPATH=${asio_DIR}
             -Dwebsocketpp_DIR:FILEPATH=${websocketpp_DIR}
             -Dopenssl_DIR:FILEPATH=${openssl_DIR}
-            -Deigen_DIR:FILEPATH=${eigen_INCLUDE_DIR}
-            -Dqwt_INCLUDE_DIR:FILEPATH=${qwt_INCLUDE_DIR}
-            -Dqwt_DIR:FILEPATH=${qwt_DIR}
+            -DEIGEN_INCLUDE_DIR:FILEPATH=${eigen_INCLUDE_DIR}
+            -DQWT_INCLUDE_DIR:FILEPATH=${qwt_INCLUDE_DIR}
+            -DQWT_DIR:FILEPATH=${qwt_DIR}
+            -DMMG_INCDIR:FILEPATH=${mmg_INCDIR}
+            -DMMG_LIBDIR:FILEPATH=${mmg_LIBDIR}
+            -DMMG_SRC_DIR:FILEPATH=${mmg_SRC_DIR}
+            -DTETGEN_INCLUDE_DIR:FILEPATH=${tetgen_INCLUDE_DIR}
+            -DTETGEN_DIR:FILEPATH=${tetgen_DIR}
             )
 
         epComputPath(${external_project})
