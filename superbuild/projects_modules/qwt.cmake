@@ -24,9 +24,6 @@ if (NOT USE_SYSTEM_${ep})
 ## Define repository where get the sources
 ## #############################################################################
 
-#set(git_url ${GITHUB_PREFIX}osakared/qwt.git)
-#set(git_tag trunk)
-
 set(svn_url https://svn.code.sf.net/p/qwt/code/trunk)
 
 ## #############################################################################
