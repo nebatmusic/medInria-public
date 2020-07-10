@@ -65,3 +65,20 @@ Index: qwt/qwtconfig.pri
  
  ######################################################################
  # When Qt has been built as framework qmake wants
+Index: qwt/src/qwt_plot_abstract_canvas.cpp
+===================================================================
+--- qwt/src/qwt_plot_abstract_canvas.cpp	(revision 3206)
++++ qwt/src/qwt_plot_abstract_canvas.cpp	(working copy)
+@@ -589,9 +589,9 @@
+ 
+     canvasWidget->setAutoFillBackground( true );
+ 
+-    canvasWidget->setProperty( "lineWidth", 2 );
+-    canvasWidget->setProperty( "frameShadow", QFrame::Sunken );
+-    canvasWidget->setProperty( "frameShape", QFrame::Panel );
++    //canvasWidget->setProperty( "lineWidth", 2 );
++    //canvasWidget->setProperty( "frameShadow", QFrame::Sunken );
++    //canvasWidget->setProperty( "frameShape", QFrame::Panel );
+ }
+ 
+ QwtPlotAbstractCanvas::~QwtPlotAbstractCanvas()
