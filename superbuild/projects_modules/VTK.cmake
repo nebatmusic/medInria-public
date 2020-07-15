@@ -41,6 +41,7 @@ if (NOT USE_SYSTEM_${ep})
 set(git_url ${GITHUB_PREFIX}Kitware/VTK.git)
 set(git_tag v8.1.2)
 
+
 ## #############################################################################
 ## Add specific cmake arguments for configuration step of the project
 ## #############################################################################
@@ -77,6 +78,13 @@ if(USE_OSPRay)
   -Dospray_DIR=${ospray_DIR}
   -DOSPRAY_INSTALL_DIR=${OSPRAY_INSTALL_DIR})
 endif()
+
+## #############################################################################
+## Check if patch has to be applied
+## #############################################################################
+ 
+ep_GeneratePatchCommand(VTK VTK_PATCH_COMMAND VTK.patch)
+
 ## #############################################################################
 ## Add external-project
 ## #############################################################################
@@ -92,6 +100,7 @@ ExternalProject_Add(${ep}
   
   GIT_REPOSITORY ${git_url}
   GIT_TAG ${git_tag}
+  PATCH_COMMAND ${VTK_PATCH_COMMAND}
   CMAKE_GENERATOR ${gen}
   CMAKE_GENERATOR_PLATFORM ${CMAKE_GENERATOR_PLATFORM}
   CMAKE_ARGS ${cmake_args}

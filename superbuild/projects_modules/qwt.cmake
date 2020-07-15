@@ -45,8 +45,6 @@ set(cmake_args
   -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
 )
 
-#ep_GeneratePatchCommand(${ep} QWT_PATCH_COMMAND qwt-6.3-svn.patch)
-
 ## #############################################################################
 ## Add external-project
 ## #############################################################################
