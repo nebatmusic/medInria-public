@@ -64,6 +64,7 @@ list(APPEND external_projects
      qwt
      mmg
      tetgen
+     quazip
      )
 
 if (USE_DTKIMAGING)

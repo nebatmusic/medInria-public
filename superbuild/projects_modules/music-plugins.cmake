@@ -16,6 +16,7 @@ function(music_plugins_project)
         tetgen
         eigen
         qwt
+        quazip
         )
 
     EP_Initialisation(${external_project}
@@ -55,6 +56,7 @@ function(music_plugins_project)
             -DMMG_SRC_DIR:FILEPATH=${mmg_SRC_DIR}
             -DTETGEN_INCLUDE_DIR:FILEPATH=${tetgen_INCLUDE_DIR}
             -DTETGEN_DIR:FILEPATH=${tetgen_DIR}
+            -DQUAZIP_DIR:FILEPATH=${quazip_DIR}
             )
 
         epComputPath(${external_project})
