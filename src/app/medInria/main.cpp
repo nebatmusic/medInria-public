@@ -90,16 +90,19 @@ int main(int argc,char* argv[])
     // Qt doc, otherwise there are some edge cases where the style is not fully applied
     //QApplication::setStyle("plastique");
     medApplication application(argc,argv);
-    medSplashScreen splash(QPixmap(":/pixmaps/medInria-logo-homepage.png"));
+    QPixmap splashLogo(":music_logo_light.png");
+    splashLogo = splashLogo.scaled(761, 180, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    medSplashScreen splash(splashLogo);
 
     setlocale(LC_NUMERIC, "C");
     QLocale::setDefault(QLocale("C"));
 
     if (dtkApplicationArgumentsContain(&application, "-h") || dtkApplicationArgumentsContain(&application, "--help"))
     {
-        qDebug() << "Usage: medInria "
-                    "[--fullscreen|--no-fullscreen] "
-                    "[--stereo] "
+        qDebug() << "Usage: "
+                 << QFileInfo(argv[0]).baseName().toStdString().c_str()
+                 << "[--fullscreen|--no-fullscreen] "
+                 << "[--stereo] "
                     "[--debug] "
             #ifdef ACTIVATE_WALL_OPTION
                     "[[--wall] [--tracker=URL]] "

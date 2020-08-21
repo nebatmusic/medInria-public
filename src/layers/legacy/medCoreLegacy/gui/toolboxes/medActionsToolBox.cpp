@@ -155,7 +155,7 @@ medActionsToolBox::medActionsToolBox( QWidget *parent /*= 0*/, bool FILE_SYSTEM 
     foreach(QAbstractButton* bt, d->buttonsList)
     {
         bt->setAutoFillBackground(true);
-        bt->setObjectName("actionToolBoxButton"); // set for style sheet medInria.qss
+        bt->setObjectName("actionToolBoxButton"); // set for style sheet in the qss
         gridLayout->addWidget(bt, (int)i/COLUMNS, (int)i%COLUMNS);
         i++;
     }

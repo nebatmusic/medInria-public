@@ -19,12 +19,11 @@
 #include <QtWidgets>
 #include <dtkCoreSupport/dtkSignalBlocker.h>
 
-#include <medIntParameterL.h>
 #include <medBoolParameterL.h>
-#include <medTriggerParameterL.h>
 #include <medDoubleParameterL.h>
-
-
+#include <medIntParameterL.h>
+#include <medSettingsManager.h>
+#include <medTriggerParameterL.h>
 
 class medTimeLineParameterLPrivate
 {
@@ -313,10 +312,25 @@ QWidget* medTimeLineParameterL::getWidget()
         QHBoxLayout *buttonsLayout = new QHBoxLayout;
         QHBoxLayout *indicatorLayout = new QHBoxLayout;
 
-        d->playParameter->setIcon(QIcon(":/icons/play.png"));
         connect(d->playParameter->getPushButton(), SIGNAL(clicked()), this, SLOT(unlockTimeLine()));
-        d->previousFrameParameter->getPushButton()->setIcon(QIcon(":/icons/backward.png"));
-        d->nextFrameParameter->getPushButton()->setIcon(QIcon(":/icons/forward.png"));
+
+        // Themes
+        QVariant themeChosen = medSettingsManager::instance()->value("startup","theme");
+        int themeIndex = themeChosen.toInt();
+
+        if (themeIndex == 3) // Light Grey
+        {
+            d->playParameter->setIcon(QIcon(":/icons/play_blue.png"));
+            d->previousFrameParameter->getPushButton()->setIcon(QIcon(":/icons/backward_blue.png"));
+            d->nextFrameParameter->getPushButton()->setIcon(QIcon(":/icons/forward_blue.png"));
+        }
+        else
+        {
+            d->playParameter->setIcon(QIcon(":/icons/play.png"));
+            d->previousFrameParameter->getPushButton()->setIcon(QIcon(":/icons/backward.png"));
+            d->nextFrameParameter->getPushButton()->setIcon(QIcon(":/icons/forward.png"));
+        }
+
         d->speedFactorParameter->getSpinBox()->setSingleStep(10);
         d->timeParameter->getSlider()->setOrientation(Qt::Horizontal);
 
