@@ -24,7 +24,7 @@ if (NOT USE_SYSTEM_${ep})
 ## Define repository where get the sources
 ## #############################################################################
 
-set(git_url ${GITHUB_PREFIX}nebatmusic/qwt.git)
+set(git_url ${GITHUB_PREFIX}Inria-Asclepios/qwt.git)
 set(git_tag music3) 
 
 ## #############################################################################
