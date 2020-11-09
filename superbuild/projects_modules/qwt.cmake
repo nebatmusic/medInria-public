@@ -76,7 +76,6 @@ ExternalProject_Add(${ep}
   CMAKE_ARGS ${cmake_args}
   DEPENDS ${${ep}_dependencies}
   UPDATE_COMMAND ""
-  PATCH_COMMAND ${QWT_PATCH_COMMAND}
   # Compile only the lib
   CONFIGURE_COMMAND ${QT_QMAKE_EXECUTABLE} ${SPEC} <SOURCE_DIR>/qwt.pro
   BUILD_COMMAND ${MAKE_PROGRAM} sub-src
