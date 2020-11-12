@@ -24,6 +24,8 @@ add_subdirectory(resources)
 
 find_package(dtk REQUIRED)
 
+find_package(Boost REQUIRED)
+
 list_source_files(${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}
   areas/browser
@@ -119,6 +121,7 @@ target_compile_definitions(${TARGET_NAME} PUBLIC
 
 target_include_directories(${TARGET_NAME}
   PRIVATE ${${TARGET_NAME}_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIR}
   )
 # PRIVATE beacause application is not supposed to be used somewhere else
 
