@@ -21,8 +21,6 @@ set(TARGET_NAME medComposer)
 ## #############################################################################
 
 find_package(dtk REQUIRED)
-include_directories(${dtk_INCLUDE_DIRS})
-
 
 ## #############################################################################
 ## List Sources

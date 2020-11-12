@@ -31,7 +31,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 ## #############################################################################
 
 find_package(dtk REQUIRED)
-include_directories(${dtk_INCLUDE_DIRS})
 
 find_package(ITK REQUIRED COMPONENTS ITKIOImageBase ITKTransform ITKIOTransformBase ITKIOTransformInsightLegacy ITKRegistrationCommon ITKIOMeta)
 include(${ITK_USE_FILE})
