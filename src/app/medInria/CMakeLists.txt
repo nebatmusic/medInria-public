@@ -23,7 +23,6 @@ add_subdirectory(QSingleApplication)
 add_subdirectory(resources)
 
 find_package(dtk REQUIRED)
-include_directories(${dtk_INCLUDE_DIRS})
 
 list_source_files(${TARGET_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}
@@ -63,9 +62,6 @@ option(ACTIVATE_WALL_OPTION
   "Activate the command line option --wall (INRIA Sophia, immersive room)"
   OFF
   )
-if (ACTIVATE_WALL_OPTION)
-  add_definitions(-DACTIVATE_WALL_OPTION)
-endif()
 
 ## #############################################################################
 ## Variable
@@ -117,6 +113,9 @@ endif()
 ## #############################################################################
 ## include directorie.
 ## #############################################################################
+target_compile_definitions(${TARGET_NAME} PUBLIC
+    $<$<BOOL:${ACTIVATE_WALL_OPTION}>:ACTIVATE_WALL_OPTION>
+    )
 
 target_include_directories(${TARGET_NAME}
   PRIVATE ${${TARGET_NAME}_INCLUDE_DIRS}
