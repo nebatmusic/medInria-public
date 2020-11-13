@@ -45,16 +45,13 @@ ExternalProject_Add(${ep}
   BINARY_DIR ${build_path}
   TMP_DIR ${tmp_path}
   STAMP_DIR ${stamp_path}
-  
   GIT_REPOSITORY ${git_url}
   GIT_TAG ${git_tag}
   PATCH_COMMAND ${${ep}_PATCH_COMMAND}
   DEPENDS ${${ep}_dependencies}
-  UPDATE_COMMAND ""
-  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E echo "Eigen - no configure step required."
-  # Nothing to build, as Eigen is fully templated
-  BUILD_COMMAND ""
-  INSTALL_COMMAND ""
+  CMAKE_GENERATOR ${gen}
+  CMAKE_GENERATOR_PLATFORM ${CMAKE_GENERATOR_PLATFORM}
+  CMAKE_ARGS ${cmake_args}
 )
 
 ## #############################################################################
