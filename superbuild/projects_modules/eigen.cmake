@@ -52,6 +52,7 @@ ExternalProject_Add(${ep}
   CMAKE_GENERATOR ${gen}
   CMAKE_GENERATOR_PLATFORM ${CMAKE_GENERATOR_PLATFORM}
   CMAKE_ARGS ${cmake_args}
+  INSTALL_COMMAND ""
 )
 
 ## #############################################################################
