@@ -38,10 +38,9 @@ ExternalProject_Add(${ep}
   GIT_REPOSITORY ${git_url}
   GIT_TAG ${git_tag}
   DEPENDS ${${ep}_dependencies}
-  UPDATE_COMMAND ""
-  CONFIGURE_COMMAND ${CMAKE_COMMAND} -E echo "Jsoncons - no configure step required."
-  # Nothing to build
-  BUILD_COMMAND ""
+  CMAKE_GENERATOR ${gen}
+  CMAKE_GENERATOR_PLATFORM ${CMAKE_GENERATOR_PLATFORM}
+  CMAKE_ARGS ${cmake_args}
   INSTALL_COMMAND ""
   )
 ## #############################################################################
